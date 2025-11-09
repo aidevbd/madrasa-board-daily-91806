@@ -33,18 +33,47 @@ const Auth = () => {
         if (error) throw error;
         navigate("/");
       } else {
-        const { error } = await supabase.auth.signUp({ email, password });
-        if (error) throw error;
+        const redirectUrl = `${window.location.origin}/`;
+        const { error } = await supabase.auth.signUp({
+          email,
+          password,
+          options: {
+            emailRedirectTo: redirectUrl
+          }
+        });
+        if (error) {
+          if (error.message.includes("already registered")) {
+            throw new Error("এই ইমেইল ইতিমধ্যে নিবন্ধিত আছে");
+          }
+          throw error;
+        }
+        
+        // Auto-login after signup (since email confirmation is disabled)
+        const { error: signInError } = await supabase.auth.signInWithPassword({ email, password });
+        if (signInError) throw signInError;
+        
         toast({
           title: "সফল",
-          description: "অ্যাকাউন্ট তৈরি হয়েছে! এখন লগ ইন করুন",
+          description: "অ্যাকাউন্ট তৈরি হয়েছে!",
         });
-        setIsLogin(true);
+        navigate("/");
       }
     } catch (error: any) {
+      let errorMessage = "সমস্যা হয়েছে";
+      
+      if (error.message.includes("Invalid login credentials")) {
+        errorMessage = "ভুল ইমেইল বা পাসওয়ার্ড";
+      } else if (error.message.includes("already registered")) {
+        errorMessage = "এই ইমেইল ইতিমধ্যে নিবন্ধিত আছে";
+      } else if (error.message.includes("Email not confirmed")) {
+        errorMessage = "ইমেইল নিশ্চিত করুন";
+      } else if (error.message) {
+        errorMessage = error.message;
+      }
+      
       toast({
         title: "ত্রুটি",
-        description: error.message || "সমস্যা হয়েছে",
+        description: errorMessage,
         variant: "destructive",
       });
     } finally {

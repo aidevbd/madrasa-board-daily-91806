@@ -1,1 +1,10 @@
 project_id = "kxbaxmyteeujkxljwgsj"
+
+[functions.reports-daily]
+verify_jwt = true
+
+[functions.reports-monthly]
+verify_jwt = true
+
+[functions.reports-custom]
+verify_jwt = true

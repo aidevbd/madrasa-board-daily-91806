@@ -26,7 +26,10 @@ const AddExpense = () => {
     unit_id: "",
     total_price: "",
     notes: "",
+    receipt_image_url: "",
   });
+  const [uploadingReceipt, setUploadingReceipt] = useState(false);
+  const [receiptPreview, setReceiptPreview] = useState<string | null>(null);
 
   useEffect(() => {
     fetchData();
@@ -38,8 +41,8 @@ const AddExpense = () => {
       if (!user) return;
 
       const [categoriesRes, unitsRes, favoritesRes] = await Promise.all([
-        supabase.from("expense_categories").select("*").eq("user_id", user.id),
-        supabase.from("units").select("*").eq("user_id", user.id),
+        supabase.from("expense_categories").select("*").order("name_bn"),
+        supabase.from("units").select("*").order("name_bn"),
         supabase.from("favorites").select("*, expense_categories(name_bn)").eq("user_id", user.id).order("display_order"),
       ]);
 
@@ -56,7 +59,73 @@ const AddExpense = () => {
       ...formData,
       item_name_bn: favorite.item_name_bn,
       category_id: favorite.category_id || "",
+      quantity: favorite.default_qty ? String(favorite.default_qty) : "",
+      unit_id: favorite.default_unit_id || "",
     });
+  };
+
+  const handleReceiptUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    // Validate file type
+    if (!file.type.startsWith('image/')) {
+      toast({
+        title: "ত্রুটি",
+        description: "শুধুমাত্র ছবি আপলোড করুন",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // Validate file size (max 5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      toast({
+        title: "ত্রুটি",
+        description: "ছবির সাইজ সর্বোচ্চ ৫ MB হতে পারে",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setUploadingReceipt(true);
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error("User not authenticated");
+
+      // Create unique filename
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${user.id}/${Date.now()}.${fileExt}`;
+
+      // Upload to Supabase Storage
+      const { error: uploadError, data } = await supabase.storage
+        .from('receipts')
+        .upload(fileName, file);
+
+      if (uploadError) throw uploadError;
+
+      // Get public URL
+      const { data: { publicUrl } } = supabase.storage
+        .from('receipts')
+        .getPublicUrl(fileName);
+
+      setFormData({ ...formData, receipt_image_url: publicUrl });
+      setReceiptPreview(URL.createObjectURL(file));
+
+      toast({
+        title: "সফল",
+        description: "রশিদ আপলোড হয়েছে",
+      });
+    } catch (error) {
+      console.error("Error uploading receipt:", error);
+      toast({
+        title: "ত্রুটি",
+        description: "রশিদ আপলোড করতে সমস্যা হয়েছে",
+        variant: "destructive",
+      });
+    } finally {
+      setUploadingReceipt(false);
+    }
   };
 
   const handleSubmit = async (saveAndNew: boolean) => {
@@ -83,6 +152,7 @@ const AddExpense = () => {
         unit_id: formData.unit_id || null,
         total_price: parseFloat(formData.total_price),
         notes: formData.notes || null,
+        receipt_image_url: formData.receipt_image_url || null,
       });
 
       if (error) throw error;
@@ -101,7 +171,9 @@ const AddExpense = () => {
           unit_id: "",
           total_price: "",
           notes: "",
+          receipt_image_url: "",
         });
+        setReceiptPreview(null);
       } else {
         navigate("/");
       }
@@ -242,10 +314,47 @@ const AddExpense = () => {
             />
           </div>
 
-          <Button variant="outline" className="w-full" disabled>
-            <Camera className="mr-2 h-4 w-4" />
-            রশিদ আপলোড (শীঘ্রই আসছে)
-          </Button>
+          <div className="space-y-2">
+            <Label htmlFor="receipt">রশিদ আপলোড</Label>
+            {receiptPreview && (
+              <div className="relative w-full h-40 bg-muted rounded-lg overflow-hidden mb-2">
+                <img src={receiptPreview} alt="Receipt preview" className="w-full h-full object-cover" />
+                <Button
+                  type="button"
+                  variant="destructive"
+                  size="sm"
+                  className="absolute top-2 right-2"
+                  onClick={() => {
+                    setReceiptPreview(null);
+                    setFormData({ ...formData, receipt_image_url: "" });
+                  }}
+                >
+                  মুছুন
+                </Button>
+              </div>
+            )}
+            <div className="flex gap-2">
+              <Input
+                id="receipt"
+                type="file"
+                accept="image/*"
+                capture="environment"
+                onChange={handleReceiptUpload}
+                disabled={uploadingReceipt}
+                className="hidden"
+              />
+              <Button
+                type="button"
+                variant="outline"
+                className="flex-1"
+                disabled={uploadingReceipt}
+                onClick={() => document.getElementById('receipt')?.click()}
+              >
+                <Camera className="mr-2 h-4 w-4" />
+                {uploadingReceipt ? "আপলোড হচ্ছে..." : "ছবি তুলুন"}
+              </Button>
+            </div>
+          </div>
         </Card>
 
         <div className="flex gap-3">

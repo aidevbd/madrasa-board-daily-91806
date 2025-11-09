@@ -30,8 +30,8 @@ const Settings = () => {
       if (!user) return;
 
       const [categoriesRes, unitsRes, favoritesRes] = await Promise.all([
-        supabase.from("expense_categories").select("*").eq("user_id", user.id),
-        supabase.from("units").select("*").eq("user_id", user.id),
+        supabase.from("expense_categories").select("*").order("name_bn"),
+        supabase.from("units").select("*").order("name_bn"),
         supabase.from("favorites").select("*, expense_categories(name_bn)").eq("user_id", user.id).order("display_order"),
       ]);
 
@@ -47,35 +47,51 @@ const Settings = () => {
     if (!newCategory.trim()) return;
 
     try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
-
       const { error } = await supabase.from("expense_categories").insert({
-        user_id: user.id,
+        name: newCategory,
         name_bn: newCategory,
       });
 
-      if (error) throw error;
+      if (error) {
+        if (error.message.includes("permission")) {
+          throw new Error("শুধুমাত্র এডমিন ক্যাটাগরি যোগ করতে পারবে");
+        }
+        throw error;
+      }
 
       toast({ title: "সফল", description: "ক্যাটাগরি যোগ হয়েছে" });
       setNewCategory("");
       fetchData();
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error adding category:", error);
-      toast({ title: "ত্রুটি", description: "ক্যাটাগরি যোগে সমস্যা", variant: "destructive" });
+      toast({ 
+        title: "ত্রুটি", 
+        description: error.message || "ক্যাটাগরি যোগে সমস্যা", 
+        variant: "destructive" 
+      });
     }
   };
 
   const deleteCategory = async (id: string) => {
     try {
       const { error } = await supabase.from("expense_categories").delete().eq("id", id);
-      if (error) throw error;
+      
+      if (error) {
+        if (error.message.includes("permission")) {
+          throw new Error("শুধুমাত্র এডমিন ক্যাটাগরি মুছতে পারবে");
+        }
+        throw error;
+      }
 
       toast({ title: "সফল", description: "ক্যাটাগরি মুছে ফেলা হয়েছে" });
       fetchData();
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error deleting category:", error);
-      toast({ title: "ত্রুটি", description: "ক্যাটাগরি মুছতে সমস্যা", variant: "destructive" });
+      toast({ 
+        title: "ত্রুটি", 
+        description: error.message || "ক্যাটাগরি মুছতে সমস্যা", 
+        variant: "destructive" 
+      });
     }
   };
 
@@ -83,35 +99,51 @@ const Settings = () => {
     if (!newUnit.trim()) return;
 
     try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
-
       const { error } = await supabase.from("units").insert({
-        user_id: user.id,
+        name: newUnit,
         name_bn: newUnit,
       });
 
-      if (error) throw error;
+      if (error) {
+        if (error.message.includes("permission")) {
+          throw new Error("শুধুমাত্র এডমিন একক যোগ করতে পারবে");
+        }
+        throw error;
+      }
 
       toast({ title: "সফল", description: "একক যোগ হয়েছে" });
       setNewUnit("");
       fetchData();
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error adding unit:", error);
-      toast({ title: "ত্রুটি", description: "একক যোগে সমস্যা", variant: "destructive" });
+      toast({ 
+        title: "ত্রুটি", 
+        description: error.message || "একক যোগে সমস্যা", 
+        variant: "destructive" 
+      });
     }
   };
 
   const deleteUnit = async (id: string) => {
     try {
       const { error } = await supabase.from("units").delete().eq("id", id);
-      if (error) throw error;
+      
+      if (error) {
+        if (error.message.includes("permission")) {
+          throw new Error("শুধুমাত্র এডমিন একক মুছতে পারবে");
+        }
+        throw error;
+      }
 
       toast({ title: "সফল", description: "একক মুছে ফেলা হয়েছে" });
       fetchData();
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error deleting unit:", error);
-      toast({ title: "ত্রুটি", description: "একক মুছতে সমস্যা", variant: "destructive" });
+      toast({ 
+        title: "ত্রুটি", 
+        description: error.message || "একক মুছতে সমস্যা", 
+        variant: "destructive" 
+      });
     }
   };
 
