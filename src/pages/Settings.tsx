@@ -47,7 +47,11 @@ const Settings = () => {
     if (!newCategory.trim()) return;
 
     try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
       const { error } = await supabase.from("expense_categories").insert({
+        user_id: user.id,
         name: newCategory,
         name_bn: newCategory,
       });
@@ -99,7 +103,11 @@ const Settings = () => {
     if (!newUnit.trim()) return;
 
     try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
       const { error } = await supabase.from("units").insert({
+        user_id: user.id,
         name: newUnit,
         name_bn: newUnit,
       });

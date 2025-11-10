@@ -5,9 +5,15 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { FileDown, Printer } from "lucide-react";
+import { FileDown, Printer, FileText } from "lucide-react";
 import Navigation from "@/components/Navigation";
 import { useToast } from "@/hooks/use-toast";
+import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip, BarChart, Bar, XAxis, YAxis, CartesianGrid } from "recharts";
+import jsPDF from "jspdf";
+import autoTable from "jspdf-autotable";
+
+const COLORS = ["#10b981", "#3b82f6", "#f59e0b", "#ef4444", "#8b5cf6", "#ec4899"];
+const CACHE_KEY = "last_report_data";
 
 const Reports = () => {
   const { toast } = useToast();
@@ -17,6 +23,23 @@ const Reports = () => {
     start: new Date().toISOString().split("T")[0],
     end: new Date().toISOString().split("T")[0],
   });
+
+  // Load cached report on mount
+  useEffect(() => {
+    const cachedData = localStorage.getItem(CACHE_KEY);
+    if (cachedData) {
+      try {
+        const parsed = JSON.parse(cachedData);
+        setReportData(parsed);
+        toast({
+          title: "অফলাইন ডেটা লোড হয়েছে",
+          description: "শেষ রিপোর্ট ক্যাশ থেকে লোড করা হয়েছে",
+        });
+      } catch (error) {
+        console.error("Error loading cached report:", error);
+      }
+    }
+  }, []);
 
   const generateReport = async (type: "daily" | "monthly" | "custom") => {
     setLoading(true);
@@ -70,7 +93,7 @@ const Reports = () => {
         categoryBreakdown[categoryName] += Number(expense.total_price);
       });
 
-      setReportData({
+      const newReportData = {
         startDate,
         endDate,
         totalFunds,
@@ -79,7 +102,13 @@ const Reports = () => {
         funds: fundsRes.data || [],
         expenses: expensesRes.data || [],
         categoryBreakdown,
-      });
+        generatedAt: new Date().toISOString(),
+      };
+
+      setReportData(newReportData);
+
+      // Cache the report for offline access
+      localStorage.setItem(CACHE_KEY, JSON.stringify(newReportData));
 
       toast({
         title: "রিপোর্ট তৈরি হয়েছে",
@@ -121,6 +150,95 @@ const Reports = () => {
       description: "ফাইল ডাউনলোড হয়েছে",
     });
   };
+
+  const exportPDF = () => {
+    if (!reportData) return;
+
+    const doc = new jsPDF();
+
+    // Add title
+    doc.setFontSize(18);
+    doc.text("Daily Boarding Manager - Report", 14, 22);
+    
+    doc.setFontSize(11);
+    doc.text(`Period: ${reportData.startDate} to ${reportData.endDate}`, 14, 30);
+
+    // Summary section
+    doc.setFontSize(14);
+    doc.text("Summary", 14, 42);
+    
+    doc.setFontSize(11);
+    doc.text(`Total Funds: ${reportData.totalFunds.toFixed(2)} Tk`, 14, 50);
+    doc.text(`Total Expenses: ${reportData.totalExpenses.toFixed(2)} Tk`, 14, 57);
+    doc.text(`Balance: ${reportData.balance.toFixed(2)} Tk`, 14, 64);
+
+    // Category breakdown
+    doc.setFontSize(14);
+    doc.text("Category Breakdown", 14, 76);
+
+    const categoryData = Object.entries(reportData.categoryBreakdown).map(([category, amount]: any) => [
+      category,
+      `${amount.toFixed(2)} Tk`
+    ]);
+
+    autoTable(doc, {
+      startY: 82,
+      head: [["Category", "Amount"]],
+      body: categoryData,
+    });
+
+    // Expenses table
+    const expenseData = reportData.expenses.map((expense: any) => [
+      expense.expense_date,
+      expense.item_name_bn,
+      expense.expense_categories?.name_bn || "",
+      `${Number(expense.total_price).toFixed(2)} Tk`
+    ]);
+
+    autoTable(doc, {
+      startY: (doc as any).lastAutoTable.finalY + 10,
+      head: [["Date", "Item", "Category", "Amount"]],
+      body: expenseData,
+    });
+
+    // Funds table
+    if (reportData.funds.length > 0) {
+      const fundData = reportData.funds.map((fund: any) => [
+        fund.fund_date,
+        fund.source_note_bn || "Fund",
+        `${Number(fund.amount).toFixed(2)} Tk`
+      ]);
+
+      autoTable(doc, {
+        startY: (doc as any).lastAutoTable.finalY + 10,
+        head: [["Date", "Source", "Amount"]],
+        body: fundData,
+      });
+    }
+
+    doc.save(`report_${reportData.startDate}_${reportData.endDate}.pdf`);
+
+    toast({
+      title: "PDF রপ্তানি সফল",
+      description: "ফাইল ডাউনলোড হয়েছে",
+    });
+  };
+
+  // Prepare chart data
+  const pieChartData = reportData
+    ? Object.entries(reportData.categoryBreakdown).map(([name, value]: any) => ({
+        name,
+        value,
+      }))
+    : [];
+
+  const barChartData = reportData
+    ? [
+        { name: "জমা", value: reportData.totalFunds },
+        { name: "খরচ", value: reportData.totalExpenses },
+        { name: "ব্যালেন্স", value: reportData.balance },
+      ]
+    : [];
 
   return (
     <div className="min-h-screen bg-muted/30 pb-24">
@@ -178,20 +296,64 @@ const Reports = () => {
             <Card className="p-4 space-y-3">
               <h3 className="font-semibold text-lg">সারসংক্ষেপ</h3>
               <div className="grid grid-cols-3 gap-3 text-center">
-                <div>
+                <div className="bg-green-50 dark:bg-green-950/20 p-3 rounded-xl">
                   <p className="text-xs text-muted-foreground">মোট জমা</p>
                   <p className="text-lg font-bold text-green-600">৳ {reportData.totalFunds.toFixed(2)}</p>
                 </div>
-                <div>
+                <div className="bg-red-50 dark:bg-red-950/20 p-3 rounded-xl">
                   <p className="text-xs text-muted-foreground">মোট খরচ</p>
                   <p className="text-lg font-bold text-red-600">৳ {reportData.totalExpenses.toFixed(2)}</p>
                 </div>
-                <div>
+                <div className="bg-primary/10 p-3 rounded-xl">
                   <p className="text-xs text-muted-foreground">ব্যালেন্স</p>
                   <p className="text-lg font-bold text-primary">৳ {reportData.balance.toFixed(2)}</p>
                 </div>
               </div>
             </Card>
+
+            {/* Bar Chart */}
+            <Card className="p-4 space-y-3">
+              <h3 className="font-semibold">আর্থিক সারসংক্ষেপ</h3>
+              <ResponsiveContainer width="100%" height={200}>
+                <BarChart data={barChartData}>
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis dataKey="name" />
+                  <YAxis />
+                  <Tooltip formatter={(value) => `৳ ${Number(value).toFixed(2)}`} />
+                  <Bar dataKey="value" fill="#8884d8">
+                    {barChartData.map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                    ))}
+                  </Bar>
+                </BarChart>
+              </ResponsiveContainer>
+            </Card>
+
+            {/* Pie Chart */}
+            {pieChartData.length > 0 && (
+              <Card className="p-4 space-y-3">
+                <h3 className="font-semibold">ক্যাটাগরি অনুযায়ী খরচ</h3>
+                <ResponsiveContainer width="100%" height={250}>
+                  <PieChart>
+                    <Pie
+                      data={pieChartData}
+                      cx="50%"
+                      cy="50%"
+                      labelLine={false}
+                      label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+                      outerRadius={80}
+                      fill="#8884d8"
+                      dataKey="value"
+                    >
+                      {pieChartData.map((entry, index) => (
+                        <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                      ))}
+                    </Pie>
+                    <Tooltip formatter={(value) => `৳ ${Number(value).toFixed(2)}`} />
+                  </PieChart>
+                </ResponsiveContainer>
+              </Card>
+            )}
 
             <Card className="p-4 space-y-3">
               <h3 className="font-semibold">ক্যাটাগরি অনুযায়ী</h3>
@@ -203,13 +365,17 @@ const Reports = () => {
               ))}
             </Card>
 
-            <div className="flex gap-3">
-              <Button onClick={exportCSV} variant="outline" className="flex-1">
-                <FileDown className="mr-2 h-4 w-4" />
-                CSV রপ্তানি
+            <div className="grid grid-cols-3 gap-3">
+              <Button onClick={exportCSV} variant="outline" size="sm">
+                <FileDown className="mr-1 h-4 w-4" />
+                CSV
               </Button>
-              <Button onClick={() => window.print()} variant="outline" className="flex-1">
-                <Printer className="mr-2 h-4 w-4" />
+              <Button onClick={exportPDF} variant="outline" size="sm">
+                <FileText className="mr-1 h-4 w-4" />
+                PDF
+              </Button>
+              <Button onClick={() => window.print()} variant="outline" size="sm">
+                <Printer className="mr-1 h-4 w-4" />
                 প্রিন্ট
               </Button>
             </div>
@@ -237,6 +403,12 @@ const Reports = () => {
                 </div>
               ))}
             </Card>
+
+            {reportData.generatedAt && (
+              <p className="text-xs text-center text-muted-foreground">
+                তৈরি হয়েছে: {new Date(reportData.generatedAt).toLocaleString("bn-BD")}
+              </p>
+            )}
           </div>
         )}
       </div>
