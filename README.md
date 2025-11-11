@@ -5,9 +5,10 @@ A comprehensive expense and fund management application with Bengali language su
 ## 🌟 Features
 
 - **Authentication**: Secure login/signup with email verification
-- **Dashboard**: Real-time balance tracking with monthly summaries
+- **Dashboard**: Real-time balance tracking with monthly summaries and recent transactions
 - **Expense Management**: Add, edit, delete expenses with receipt uploads
 - **Fund Management**: Track income sources and deposits
+- **Transaction History**: Search, filter, and delete all expenses and funds
 - **Reports**: Daily, monthly, and custom range reports with charts
 - **Export Options**: PDF and CSV export functionality
 - **Offline Caching**: Last report cached for offline viewing
@@ -93,6 +94,7 @@ The project includes E2E tests for:
 - ✅ Dashboard functionality
 - ✅ Expense management (CRUD operations)
 - ✅ Fund management
+- ✅ Transaction history (search, filter, delete)
 - ✅ Report generation (daily, monthly, custom range)
 - ✅ Settings management (categories, units, favorites)
 - ✅ Navigation and routing
@@ -149,6 +151,7 @@ daily-boarding-manager/
 │   ├── auth.spec.ts
 │   ├── dashboard.spec.ts
 │   ├── expense.spec.ts
+│   ├── transactions.spec.ts
 │   ├── reports.spec.ts
 │   └── settings.spec.ts
 ├── src/
@@ -168,6 +171,7 @@ daily-boarding-manager/
 │   │   ├── Auth.tsx
 │   │   ├── Dashboard.tsx
 │   │   ├── Index.tsx
+│   │   ├── Transactions.tsx
 │   │   ├── Reports.tsx
 │   │   └── Settings.tsx
 │   ├── lib/                     # Utilities

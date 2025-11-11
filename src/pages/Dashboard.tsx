@@ -3,9 +3,10 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { PlusCircle, Wallet, TrendingDown, TrendingUp } from "lucide-react";
+import { PlusCircle, Wallet, TrendingDown, TrendingUp, History } from "lucide-react";
 import Navigation from "@/components/Navigation";
 import { useToast } from "@/hooks/use-toast";
+import { format } from "date-fns";
 
 const Dashboard = () => {
   const navigate = useNavigate();
@@ -14,6 +15,7 @@ const Dashboard = () => {
   const [currentBalance, setCurrentBalance] = useState(0);
   const [monthFunds, setMonthFunds] = useState(0);
   const [monthExpenses, setMonthExpenses] = useState(0);
+  const [recentTransactions, setRecentTransactions] = useState<any[]>([]);
 
   useEffect(() => {
     fetchDashboardData();
@@ -34,16 +36,18 @@ const Dashboard = () => {
       // Fetch all funds
       const { data: allFunds, error: fundsError } = await supabase
         .from("funds")
-        .select("amount")
-        .eq("user_id", user.id);
+        .select("*")
+        .eq("user_id", user.id)
+        .order("fund_date", { ascending: false });
 
       if (fundsError) throw fundsError;
 
       // Fetch all expenses
       const { data: allExpenses, error: expensesError } = await supabase
         .from("expenses")
-        .select("total_price")
-        .eq("user_id", user.id);
+        .select("*")
+        .eq("user_id", user.id)
+        .order("expense_date", { ascending: false });
 
       if (expensesError) throw expensesError;
 
@@ -75,6 +79,18 @@ const Dashboard = () => {
       setCurrentBalance(totalFunds - totalExpenses);
       setMonthFunds(monthlyFunds);
       setMonthExpenses(monthlyExpenses);
+
+      // Get recent transactions
+      const recent = [
+        ...allExpenses.slice(0, 3).map(e => ({ ...e, type: 'expense' as const, date: e.expense_date })),
+        ...allFunds.slice(0, 3).map(f => ({ ...f, type: 'fund' as const, date: f.fund_date }))
+      ].sort((a, b) => {
+        const dateA = new Date(a.date);
+        const dateB = new Date(b.date);
+        return dateB.getTime() - dateA.getTime();
+      }).slice(0, 5);
+      
+      setRecentTransactions(recent);
     } catch (error) {
       console.error("Error fetching dashboard data:", error);
       toast({
@@ -154,6 +170,35 @@ const Dashboard = () => {
             জমা যোগ করুন
           </Button>
         </div>
+
+        {recentTransactions.length > 0 && (
+          <Card className="p-4 mt-6">
+            <div className="flex justify-between items-center mb-3">
+              <h2 className="font-semibold text-lg">সাম্প্রতিক লেনদেন</h2>
+              <Button variant="ghost" size="sm" onClick={() => navigate("/transactions")}>
+                <History className="h-4 w-4 mr-1" />
+                সব দেখুন
+              </Button>
+            </div>
+            <div className="space-y-2">
+              {recentTransactions.map((transaction, index) => (
+                <div key={index} className="flex justify-between items-center py-2 border-b last:border-0">
+                  <div className="flex-1">
+                    <p className="font-medium text-sm">
+                      {transaction.type === 'expense' ? transaction.item_name_bn : transaction.source_note_bn || 'জমা'}
+                    </p>
+                    <p className="text-xs text-muted-foreground">
+                      {format(new Date(transaction.date), "dd/MM/yyyy")}
+                    </p>
+                  </div>
+                  <p className={`font-semibold ${transaction.type === 'expense' ? 'text-red-600' : 'text-green-600'}`}>
+                    {transaction.type === 'expense' ? '-' : '+'}৳ {Number(transaction.type === 'expense' ? transaction.total_price : transaction.amount).toFixed(2)}
+                  </p>
+                </div>
+              ))}
+            </div>
+          </Card>
+        )}
       </div>
 
       <Navigation />
