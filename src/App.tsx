@@ -10,6 +10,7 @@ import AddFund from "./pages/AddFund";
 import Reports from "./pages/Reports";
 import Settings from "./pages/Settings";
 import Transactions from "./pages/Transactions";
+import BulkExpense from "./pages/BulkExpense";
 import Auth from "./pages/Auth";
 import NotFound from "./pages/NotFound";
 
@@ -25,6 +26,7 @@ const App = () => (
           <Route path="/auth" element={<Auth />} />
           <Route path="/" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
           <Route path="/add-expense" element={<ProtectedRoute><AddExpense /></ProtectedRoute>} />
+          <Route path="/bulk-expense" element={<ProtectedRoute><BulkExpense /></ProtectedRoute>} />
           <Route path="/add-fund" element={<ProtectedRoute><AddFund /></ProtectedRoute>} />
           <Route path="/reports" element={<ProtectedRoute><Reports /></ProtectedRoute>} />
           <Route path="/transactions" element={<ProtectedRoute><Transactions /></ProtectedRoute>} />
