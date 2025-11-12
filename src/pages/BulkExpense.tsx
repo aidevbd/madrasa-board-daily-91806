@@ -13,7 +13,6 @@ import Navigation from "@/components/Navigation";
 interface BulkExpenseItem {
   id: string;
   item_name_bn: string;
-  category_id: string;
   quantity: string;
   unit_id: string;
   unit_price: string;
@@ -23,10 +22,11 @@ interface BulkExpenseItem {
 export default function BulkExpense() {
   const navigate = useNavigate();
   const [expenseDate, setExpenseDate] = useState(new Date().toISOString().split('T')[0]);
+  const [categoryId, setCategoryId] = useState<string>("");
   const [categories, setCategories] = useState<any[]>([]);
   const [units, setUnits] = useState<any[]>([]);
   const [items, setItems] = useState<BulkExpenseItem[]>([
-    { id: crypto.randomUUID(), item_name_bn: "", category_id: "", quantity: "", unit_id: "", unit_price: "", total_price: 0 }
+    { id: crypto.randomUUID(), item_name_bn: "", quantity: "", unit_id: "", unit_price: "", total_price: 0 }
   ]);
   const [loading, setLoading] = useState(false);
 
@@ -49,7 +49,6 @@ export default function BulkExpense() {
     setItems([...items, { 
       id: crypto.randomUUID(), 
       item_name_bn: "", 
-      category_id: "", 
       quantity: "", 
       unit_id: "", 
       unit_price: "", 
@@ -107,7 +106,7 @@ export default function BulkExpense() {
         user_id: user?.id,
         expense_date: expenseDate,
         item_name_bn: item.item_name_bn,
-        category_id: item.category_id || null,
+        category_id: categoryId || null,
         quantity: parseFloat(item.quantity),
         unit_id: item.unit_id || null,
         total_price: item.total_price
@@ -153,18 +152,9 @@ export default function BulkExpense() {
 
         <Card className="p-4">
           <div className="space-y-4">
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-lg font-semibold">আইটেম তালিকা</h2>
-              <Button onClick={addNewRow} size="sm" variant="outline">
-                <Plus className="h-4 w-4 mr-1" />
-                নতুন আইটেম
-              </Button>
-            </div>
-
             {/* Header Row */}
-            <div className="hidden md:grid md:grid-cols-12 gap-2 font-semibold text-sm pb-2 border-b">
-              <div className="col-span-3">পণ্যের নাম</div>
-              <div className="col-span-2">ক্যাটাগরি</div>
+            <div className="hidden md:grid md:grid-cols-11 gap-2 font-semibold text-sm pb-2 border-b">
+              <div className="col-span-4">পণ্যের নাম</div>
               <div className="col-span-2">পরিমাণ</div>
               <div className="col-span-2">একক</div>
               <div className="col-span-2">একক দাম</div>
@@ -188,35 +178,15 @@ export default function BulkExpense() {
                     )}
                   </div>
 
-                  <div className="grid grid-cols-1 md:grid-cols-12 gap-2">
+                  <div className="grid grid-cols-1 md:grid-cols-11 gap-2">
                     {/* Item Name */}
-                    <div className="md:col-span-3">
+                    <div className="md:col-span-4">
                       <Label className="md:hidden">পণ্যের নাম</Label>
                       <Input
                         placeholder="পণ্যের নাম"
                         value={item.item_name_bn}
                         onChange={(e) => updateItem(item.id, "item_name_bn", e.target.value)}
                       />
-                    </div>
-
-                    {/* Category */}
-                    <div className="md:col-span-2">
-                      <Label className="md:hidden">ক্যাটাগরি</Label>
-                      <Select
-                        value={item.category_id}
-                        onValueChange={(value) => updateItem(item.id, "category_id", value)}
-                      >
-                        <SelectTrigger className="bg-background">
-                          <SelectValue placeholder="ক্যাটাগরি" />
-                        </SelectTrigger>
-                        <SelectContent className="bg-background z-50">
-                          {categories.map((cat) => (
-                            <SelectItem key={cat.id} value={cat.id}>
-                              {cat.name_bn}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
                     </div>
 
                     {/* Quantity */}
@@ -289,16 +259,41 @@ export default function BulkExpense() {
           </div>
         </Card>
 
-        {/* Summary Card */}
+        {/* Add New Item Button */}
+        <div className="flex justify-center">
+          <Button onClick={addNewRow} size="lg" variant="outline" className="w-full md:w-auto">
+            <Plus className="h-5 w-5 mr-2" />
+            নতুন আইটেম যোগ করুন
+          </Button>
+        </div>
+
+        {/* Summary Card with Category */}
         <Card className="p-4 bg-primary/5">
-          <div className="flex justify-between items-center">
-            <div>
-              <p className="text-sm text-muted-foreground">মোট আইটেম</p>
-              <p className="text-2xl font-bold">{totalItems}টি</p>
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <Label>ক্যাটাগরি (ঐচ্ছিক)</Label>
+              <Select value={categoryId} onValueChange={setCategoryId}>
+                <SelectTrigger className="bg-background">
+                  <SelectValue placeholder="ক্যাটাগরি নির্বাচন করুন" />
+                </SelectTrigger>
+                <SelectContent className="bg-background z-50">
+                  {categories.map((cat) => (
+                    <SelectItem key={cat.id} value={cat.id}>
+                      {cat.name_bn}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
-            <div className="text-right">
-              <p className="text-sm text-muted-foreground">সর্বমোট খরচ</p>
-              <p className="text-2xl font-bold text-primary">৳{totalAmount.toFixed(2)}</p>
+            <div className="flex justify-between items-center pt-2 border-t">
+              <div>
+                <p className="text-sm text-muted-foreground">মোট আইটেম</p>
+                <p className="text-2xl font-bold">{totalItems}টি</p>
+              </div>
+              <div className="text-right">
+                <p className="text-sm text-muted-foreground">সর্বমোট খরচ</p>
+                <p className="text-2xl font-bold text-primary">৳{totalAmount.toFixed(2)}</p>
+              </div>
             </div>
           </div>
         </Card>
