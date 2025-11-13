@@ -90,7 +90,9 @@ export default function BulkExpense() {
     const validItems = items.filter(item => 
       item.item_name_bn.trim() !== "" && 
       item.quantity !== "" && 
-      item.unit_price !== ""
+      item.unit_price !== "" &&
+      parseFloat(item.quantity) > 0 &&
+      parseFloat(item.unit_price) >= 0
     );
 
     if (validItems.length === 0) {
@@ -98,18 +100,28 @@ export default function BulkExpense() {
       return;
     }
 
+    if (!expenseDate) {
+      toast.error("তারিখ নির্বাচন করুন");
+      return;
+    }
+
     setLoading(true);
     try {
-      const { data: { user } } = await supabase.auth.getUser();
+      const { data: { user }, error: userError } = await supabase.auth.getUser();
+      
+      if (userError || !user) {
+        toast.error("ইউজার খুঁজে পাওয়া যায়নি");
+        return;
+      }
       
       const expensesToInsert = validItems.map(item => ({
-        user_id: user?.id,
+        user_id: user.id,
         expense_date: expenseDate,
-        item_name_bn: item.item_name_bn,
+        item_name_bn: item.item_name_bn.trim(),
         category_id: categoryId || null,
         quantity: parseFloat(item.quantity),
         unit_id: item.unit_id || null,
-        total_price: item.total_price
+        total_price: parseFloat(item.total_price.toFixed(2))
       }));
 
       const { error } = await supabase.from("expenses").insert(expensesToInsert);
@@ -198,6 +210,7 @@ export default function BulkExpense() {
                         value={item.quantity}
                         onChange={(e) => updateItem(item.id, "quantity", e.target.value)}
                         step="0.01"
+                        min="0"
                       />
                     </div>
 
@@ -230,6 +243,7 @@ export default function BulkExpense() {
                         value={item.unit_price}
                         onChange={(e) => updateItem(item.id, "unit_price", e.target.value)}
                         step="0.01"
+                        min="0"
                       />
                     </div>
 
