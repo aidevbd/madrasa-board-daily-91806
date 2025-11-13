@@ -51,6 +51,7 @@ export type Database = {
       }
       expenses: {
         Row: {
+          batch_id: string | null
           category_id: string | null
           created_at: string
           expense_date: string
@@ -65,6 +66,7 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          batch_id?: string | null
           category_id?: string | null
           created_at?: string
           expense_date?: string
@@ -79,6 +81,7 @@ export type Database = {
           user_id: string
         }
         Update: {
+          batch_id?: string | null
           category_id?: string | null
           created_at?: string
           expense_date?: string

@@ -150,6 +150,9 @@ export default function BulkExpense() {
         return;
       }
       
+      // Generate a batch_id to group all items together
+      const batchId = crypto.randomUUID();
+      
       const expensesToInsert = validItems.map(item => ({
         user_id: user.id,
         expense_date: expenseDate,
@@ -157,7 +160,8 @@ export default function BulkExpense() {
         category_id: categoryId || null,
         quantity: parseFloat(item.quantity),
         unit_id: item.unit_id || null,
-        total_price: parseFloat(item.total_price.toFixed(2))
+        total_price: parseFloat(item.total_price.toFixed(2)),
+        batch_id: batchId
       }));
 
       const { error } = await supabase.from("expenses").insert(expensesToInsert);

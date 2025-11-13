@@ -5,11 +5,12 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { ArrowLeft, Pencil, Trash2, Search, TrendingUp, TrendingDown } from "lucide-react";
+import { ArrowLeft, Pencil, Trash2, Search, TrendingUp, TrendingDown, ChevronDown, ChevronUp } from "lucide-react";
 import Navigation from "@/components/Navigation";
 import { useToast } from "@/hooks/use-toast";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { format } from "date-fns";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 
 const Transactions = () => {
   const navigate = useNavigate();
@@ -18,10 +19,12 @@ const Transactions = () => {
   const [expenses, setExpenses] = useState<any[]>([]);
   const [funds, setFunds] = useState<any[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
-  const [deleteDialog, setDeleteDialog] = useState<{ open: boolean; type: 'expense' | 'fund' | null; id: string | null }>({
+  const [expandedBatches, setExpandedBatches] = useState<Set<string>>(new Set());
+  const [deleteDialog, setDeleteDialog] = useState<{ open: boolean; type: 'expense' | 'fund' | 'batch' | null; id: string | null; batchId?: string | null }>({
     open: false,
     type: null,
-    id: null
+    id: null,
+    batchId: null
   });
 
   useEffect(() => {
@@ -63,16 +66,32 @@ const Transactions = () => {
   };
 
   const handleDelete = async () => {
-    if (!deleteDialog.id || !deleteDialog.type) return;
+    if (!deleteDialog.id && !deleteDialog.batchId) return;
 
     try {
-      const table = deleteDialog.type === 'expense' ? 'expenses' : 'funds';
-      const { error } = await supabase
-        .from(table)
-        .delete()
-        .eq('id', deleteDialog.id);
+      if (deleteDialog.type === 'batch' && deleteDialog.batchId) {
+        // Delete all expenses in the batch
+        const { error } = await supabase
+          .from('expenses')
+          .delete()
+          .eq('batch_id', deleteDialog.batchId);
 
-      if (error) throw error;
+        if (error) throw error;
+      } else if (deleteDialog.type === 'expense') {
+        const { error } = await supabase
+          .from('expenses')
+          .delete()
+          .eq('id', deleteDialog.id);
+
+        if (error) throw error;
+      } else if (deleteDialog.type === 'fund') {
+        const { error } = await supabase
+          .from('funds')
+          .delete()
+          .eq('id', deleteDialog.id);
+
+        if (error) throw error;
+      }
 
       toast({
         title: "সফল",
@@ -88,7 +107,7 @@ const Transactions = () => {
         variant: "destructive",
       });
     } finally {
-      setDeleteDialog({ open: false, type: null, id: null });
+      setDeleteDialog({ open: false, type: null, id: null, batchId: null });
     }
   };
 
@@ -100,6 +119,37 @@ const Transactions = () => {
   const filteredFunds = funds.filter(f =>
     f.source_note_bn?.toLowerCase().includes(searchQuery.toLowerCase())
   );
+
+  // Group expenses by batch_id
+  const groupedExpenses = () => {
+    const groups: { [key: string]: any[] } = {};
+    const singles: any[] = [];
+
+    filteredExpenses.forEach(expense => {
+      if (expense.batch_id) {
+        if (!groups[expense.batch_id]) {
+          groups[expense.batch_id] = [];
+        }
+        groups[expense.batch_id].push(expense);
+      } else {
+        singles.push(expense);
+      }
+    });
+
+    return { groups, singles };
+  };
+
+  const { groups: batchGroups, singles: singleExpenses } = groupedExpenses();
+
+  const toggleBatch = (batchId: string) => {
+    const newExpanded = new Set(expandedBatches);
+    if (newExpanded.has(batchId)) {
+      newExpanded.delete(batchId);
+    } else {
+      newExpanded.add(batchId);
+    }
+    setExpandedBatches(newExpanded);
+  };
 
   if (loading) {
     return (
@@ -157,42 +207,121 @@ const Transactions = () => {
                 </Button>
               </Card>
             ) : (
-              filteredExpenses.map((expense) => (
-                <Card key={expense.id} className="p-4">
-                  <div className="flex justify-between items-start mb-2">
-                    <div className="flex-1">
-                      <h3 className="font-semibold text-lg">{expense.item_name_bn}</h3>
-                      {expense.expense_categories && (
-                        <p className="text-sm text-muted-foreground">{expense.expense_categories.name_bn}</p>
-                      )}
-                      <p className="text-xs text-muted-foreground mt-1">
-                        {format(new Date(expense.expense_date), "dd/MM/yyyy")}
-                      </p>
-                    </div>
-                    <div className="text-right">
-                      <p className="text-xl font-bold text-red-600">৳ {Number(expense.total_price).toFixed(2)}</p>
-                      {expense.quantity && expense.units && (
-                        <p className="text-sm text-muted-foreground">
-                          {Number(expense.quantity)} {expense.units.name_bn}
+              <>
+                {/* Render batch groups */}
+                {Object.entries(batchGroups).map(([batchId, batchExpenses]) => {
+                  const totalAmount = batchExpenses.reduce((sum, exp) => sum + Number(exp.total_price), 0);
+                  const firstExpense = batchExpenses[0];
+                  const isExpanded = expandedBatches.has(batchId);
+
+                  return (
+                    <Card key={batchId} className="p-4 border-2 border-primary/20">
+                      <Collapsible open={isExpanded} onOpenChange={() => toggleBatch(batchId)}>
+                        <div className="flex justify-between items-start mb-2">
+                          <div className="flex-1">
+                            <div className="flex items-center gap-2">
+                              <h3 className="font-semibold text-lg">বাজারের তালিকা</h3>
+                              <span className="text-xs bg-primary/10 text-primary px-2 py-1 rounded-full">
+                                {batchExpenses.length} টি আইটেম
+                              </span>
+                            </div>
+                            {firstExpense.expense_categories && (
+                              <p className="text-sm text-muted-foreground">{firstExpense.expense_categories.name_bn}</p>
+                            )}
+                            <p className="text-xs text-muted-foreground mt-1">
+                              {format(new Date(firstExpense.expense_date), "dd/MM/yyyy")}
+                            </p>
+                          </div>
+                          <div className="text-right">
+                            <p className="text-xl font-bold text-red-600">৳ {totalAmount.toFixed(2)}</p>
+                          </div>
+                        </div>
+
+                        <CollapsibleTrigger asChild>
+                          <Button variant="outline" size="sm" className="w-full mb-2">
+                            {isExpanded ? (
+                              <>
+                                <ChevronUp className="h-4 w-4 mr-2" />
+                                লুকান
+                              </>
+                            ) : (
+                              <>
+                                <ChevronDown className="h-4 w-4 mr-2" />
+                                বিস্তারিত দেখুন
+                              </>
+                            )}
+                          </Button>
+                        </CollapsibleTrigger>
+
+                        <CollapsibleContent className="space-y-2 mt-3 pt-3 border-t">
+                          {batchExpenses.map((expense) => (
+                            <div key={expense.id} className="flex justify-between items-center py-2 px-3 bg-muted/50 rounded">
+                              <div className="flex-1">
+                                <p className="font-medium">{expense.item_name_bn}</p>
+                                {expense.quantity && expense.units && (
+                                  <p className="text-xs text-muted-foreground">
+                                    {Number(expense.quantity)} {expense.units.name_bn}
+                                  </p>
+                                )}
+                              </div>
+                              <p className="font-semibold text-red-600">৳ {Number(expense.total_price).toFixed(2)}</p>
+                            </div>
+                          ))}
+                        </CollapsibleContent>
+
+                        <div className="flex gap-2 mt-3">
+                          <Button
+                            variant="destructive"
+                            size="sm"
+                            onClick={() => setDeleteDialog({ open: true, type: 'batch', id: null, batchId })}
+                          >
+                            <Trash2 className="h-3 w-3 mr-1" />
+                            সম্পূর্ণ মুছুন
+                          </Button>
+                        </div>
+                      </Collapsible>
+                    </Card>
+                  );
+                })}
+
+                {/* Render single expenses */}
+                {singleExpenses.map((expense) => (
+                  <Card key={expense.id} className="p-4">
+                    <div className="flex justify-between items-start mb-2">
+                      <div className="flex-1">
+                        <h3 className="font-semibold text-lg">{expense.item_name_bn}</h3>
+                        {expense.expense_categories && (
+                          <p className="text-sm text-muted-foreground">{expense.expense_categories.name_bn}</p>
+                        )}
+                        <p className="text-xs text-muted-foreground mt-1">
+                          {format(new Date(expense.expense_date), "dd/MM/yyyy")}
                         </p>
-                      )}
+                      </div>
+                      <div className="text-right">
+                        <p className="text-xl font-bold text-red-600">৳ {Number(expense.total_price).toFixed(2)}</p>
+                        {expense.quantity && expense.units && (
+                          <p className="text-sm text-muted-foreground">
+                            {Number(expense.quantity)} {expense.units.name_bn}
+                          </p>
+                        )}
+                      </div>
                     </div>
-                  </div>
-                  {expense.notes && (
-                    <p className="text-sm text-muted-foreground mb-3">{expense.notes}</p>
-                  )}
-                  <div className="flex gap-2">
-                    <Button
-                      variant="destructive"
-                      size="sm"
-                      onClick={() => setDeleteDialog({ open: true, type: 'expense', id: expense.id })}
-                    >
-                      <Trash2 className="h-3 w-3 mr-1" />
-                      মুছুন
-                    </Button>
-                  </div>
-                </Card>
-              ))
+                    {expense.notes && (
+                      <p className="text-sm text-muted-foreground mb-3">{expense.notes}</p>
+                    )}
+                    <div className="flex gap-2">
+                      <Button
+                        variant="destructive"
+                        size="sm"
+                        onClick={() => setDeleteDialog({ open: true, type: 'expense', id: expense.id })}
+                      >
+                        <Trash2 className="h-3 w-3 mr-1" />
+                        মুছুন
+                      </Button>
+                    </div>
+                  </Card>
+                ))}
+              </>
             )}
           </TabsContent>
 
