@@ -9,6 +9,7 @@ import { ArrowLeft, Plus, Trash2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import Navigation from "@/components/Navigation";
+import { z } from "zod";
 
 interface BulkExpenseItem {
   id: string;
@@ -18,6 +19,20 @@ interface BulkExpenseItem {
   unit_price: string;
   total_price: number;
 }
+
+// Validation schema for bulk expense items
+const bulkExpenseItemSchema = z.object({
+  item_name_bn: z.string()
+    .trim()
+    .min(1, "আইটেমের নাম লিখুন")
+    .max(200, "আইটেমের নাম সর্বোচ্চ ২০০ অক্ষরের হতে পারে"),
+  quantity: z.string()
+    .min(1, "পরিমাণ লিখুন")
+    .refine((val) => !isNaN(parseFloat(val)) && parseFloat(val) > 0, "পরিমাণ শূন্যের বেশি হতে হবে"),
+  unit_price: z.string()
+    .min(1, "দাম লিখুন")
+    .refine((val) => !isNaN(parseFloat(val)) && parseFloat(val) >= 0, "সঠিক দাম লিখুন")
+});
 
 export default function BulkExpense() {
   const navigate = useNavigate();
@@ -87,21 +102,42 @@ export default function BulkExpense() {
   };
 
   const handleSubmit = async () => {
-    const validItems = items.filter(item => 
-      item.item_name_bn.trim() !== "" && 
-      item.quantity !== "" && 
-      item.unit_price !== "" &&
-      parseFloat(item.quantity) > 0 &&
-      parseFloat(item.unit_price) >= 0
-    );
-
-    if (validItems.length === 0) {
-      toast.error("অন্তত একটি আইটেম যোগ করুন");
+    // Validate date
+    if (!expenseDate) {
+      toast.error("তারিখ নির্বাচন করুন");
       return;
     }
 
-    if (!expenseDate) {
-      toast.error("তারিখ নির্বাচন করুন");
+    // Validate and filter items
+    const validItems: BulkExpenseItem[] = [];
+    const errors: string[] = [];
+
+    for (const item of items) {
+      if (!item.item_name_bn.trim() && !item.quantity && !item.unit_price) {
+        continue; // Skip empty rows
+      }
+
+      const validation = bulkExpenseItemSchema.safeParse({
+        item_name_bn: item.item_name_bn,
+        quantity: item.quantity,
+        unit_price: item.unit_price
+      });
+
+      if (!validation.success) {
+        const firstError = validation.error.errors[0];
+        errors.push(`${item.item_name_bn || 'আইটেম'}: ${firstError.message}`);
+      } else {
+        validItems.push(item);
+      }
+    }
+
+    if (errors.length > 0) {
+      toast.error(errors[0]);
+      return;
+    }
+
+    if (validItems.length === 0) {
+      toast.error("অন্তত একটি আইটেম যোগ করুন");
       return;
     }
 

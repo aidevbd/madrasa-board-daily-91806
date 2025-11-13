@@ -8,6 +8,17 @@ import { Card } from "@/components/ui/card";
 import { ArrowLeft, Save } from "lucide-react";
 import Navigation from "@/components/Navigation";
 import { useToast } from "@/hooks/use-toast";
+import { z } from "zod";
+
+// Validation schema
+const fundSchema = z.object({
+  amount: z.string()
+    .min(1, "পরিমাণ লিখুন")
+    .refine((val) => !isNaN(parseFloat(val)) && parseFloat(val) > 0, "পরিমাণ শূন্যের বেশি হতে হবে"),
+  source_note_bn: z.string()
+    .max(500, "নোট সর্বোচ্চ ৫০০ অক্ষরের হতে পারে")
+    .optional()
+});
 
 const AddFund = () => {
   const navigate = useNavigate();
@@ -21,10 +32,17 @@ const AddFund = () => {
   });
 
   const handleSubmit = async (saveAndNew: boolean) => {
-    if (!formData.amount) {
+    // Validate input
+    const validation = fundSchema.safeParse({
+      amount: formData.amount,
+      source_note_bn: formData.source_note_bn
+    });
+    
+    if (!validation.success) {
+      const firstError = validation.error.errors[0];
       toast({
         title: "ত্রুটি",
-        description: "অনুগ্রহ করে পরিমাণ লিখুন",
+        description: firstError.message,
         variant: "destructive",
       });
       return;
@@ -38,8 +56,8 @@ const AddFund = () => {
       const { error } = await supabase.from("funds").insert({
         user_id: user.id,
         fund_date: formData.fund_date,
-        amount: parseFloat(formData.amount),
-        source_note_bn: formData.source_note_bn || null,
+        amount: parseFloat(parseFloat(formData.amount).toFixed(2)),
+        source_note_bn: formData.source_note_bn?.trim() || null,
       });
 
       if (error) throw error;
@@ -104,6 +122,7 @@ const AddFund = () => {
               id="amount"
               type="number"
               step="0.01"
+              min="0"
               placeholder="০.০০"
               value={formData.amount}
               onChange={(e) => setFormData({ ...formData, amount: e.target.value })}

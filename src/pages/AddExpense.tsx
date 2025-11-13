@@ -9,6 +9,24 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { ArrowLeft, Camera, Save } from "lucide-react";
 import Navigation from "@/components/Navigation";
 import { useToast } from "@/hooks/use-toast";
+import { z } from "zod";
+
+// Validation schema
+const expenseSchema = z.object({
+  item_name_bn: z.string()
+    .trim()
+    .min(1, "আইটেমের নাম লিখুন")
+    .max(200, "আইটেমের নাম সর্বোচ্চ ২০০ অক্ষরের হতে পারে"),
+  total_price: z.string()
+    .min(1, "মূল্য লিখুন")
+    .refine((val) => !isNaN(parseFloat(val)) && parseFloat(val) >= 0, "সঠিক মূল্য লিখুন"),
+  quantity: z.string()
+    .optional()
+    .refine((val) => !val || (!isNaN(parseFloat(val)) && parseFloat(val) > 0), "পরিমাণ শূন্যের বেশি হতে হবে"),
+  notes: z.string()
+    .max(1000, "নোট সর্বোচ্চ ১০০০ অক্ষরের হতে পারে")
+    .optional()
+});
 
 const AddExpense = () => {
   const navigate = useNavigate();
@@ -129,10 +147,19 @@ const AddExpense = () => {
   };
 
   const handleSubmit = async (saveAndNew: boolean) => {
-    if (!formData.item_name_bn || !formData.total_price) {
+    // Validate input
+    const validation = expenseSchema.safeParse({
+      item_name_bn: formData.item_name_bn,
+      total_price: formData.total_price,
+      quantity: formData.quantity,
+      notes: formData.notes
+    });
+    
+    if (!validation.success) {
+      const firstError = validation.error.errors[0];
       toast({
         title: "ত্রুটি",
-        description: "অনুগ্রহ করে আইটেম নাম এবং মূল্য লিখুন",
+        description: firstError.message,
         variant: "destructive",
       });
       return;
@@ -146,12 +173,12 @@ const AddExpense = () => {
       const { error } = await supabase.from("expenses").insert({
         user_id: user.id,
         expense_date: formData.expense_date,
-        item_name_bn: formData.item_name_bn,
+        item_name_bn: formData.item_name_bn.trim(),
         category_id: formData.category_id || null,
         quantity: formData.quantity ? parseFloat(formData.quantity) : null,
         unit_id: formData.unit_id || null,
-        total_price: parseFloat(formData.total_price),
-        notes: formData.notes || null,
+        total_price: parseFloat(parseFloat(formData.total_price).toFixed(2)),
+        notes: formData.notes?.trim() || null,
         receipt_image_url: formData.receipt_image_url || null,
       });
 
@@ -269,6 +296,7 @@ const AddExpense = () => {
                 id="quantity"
                 type="number"
                 step="0.01"
+                min="0"
                 placeholder="0.00"
                 value={formData.quantity}
                 onChange={(e) => setFormData({ ...formData, quantity: e.target.value })}
@@ -298,6 +326,7 @@ const AddExpense = () => {
               id="price"
               type="number"
               step="0.01"
+              min="0"
               placeholder="০.০০"
               value={formData.total_price}
               onChange={(e) => setFormData({ ...formData, total_price: e.target.value })}

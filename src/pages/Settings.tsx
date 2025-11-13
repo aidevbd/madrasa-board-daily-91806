@@ -9,6 +9,15 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Plus, Trash2, LogOut } from "lucide-react";
 import Navigation from "@/components/Navigation";
 import { useToast } from "@/hooks/use-toast";
+import { z } from "zod";
+
+// Validation schemas
+const nameSchema = z.object({
+  name: z.string()
+    .trim()
+    .min(1, "নাম লিখুন")
+    .max(100, "নাম সর্বোচ্চ ১০০ অক্ষরের হতে পারে")
+});
 
 const Settings = () => {
   const navigate = useNavigate();
@@ -44,7 +53,13 @@ const Settings = () => {
   };
 
   const addCategory = async () => {
-    if (!newCategory.trim()) return;
+    // Validate input
+    const validation = nameSchema.safeParse({ name: newCategory });
+    if (!validation.success) {
+      const firstError = validation.error.errors[0];
+      toast({ title: "ত্রুটি", description: firstError.message, variant: "destructive" });
+      return;
+    }
 
     try {
       const { data: { user } } = await supabase.auth.getUser();
@@ -52,8 +67,8 @@ const Settings = () => {
 
       const { error } = await supabase.from("expense_categories").insert({
         user_id: user.id,
-        name: newCategory,
-        name_bn: newCategory,
+        name: newCategory.trim(),
+        name_bn: newCategory.trim(),
       });
 
       if (error) {
@@ -100,7 +115,13 @@ const Settings = () => {
   };
 
   const addUnit = async () => {
-    if (!newUnit.trim()) return;
+    // Validate input
+    const validation = nameSchema.safeParse({ name: newUnit });
+    if (!validation.success) {
+      const firstError = validation.error.errors[0];
+      toast({ title: "ত্রুটি", description: firstError.message, variant: "destructive" });
+      return;
+    }
 
     try {
       const { data: { user } } = await supabase.auth.getUser();
@@ -108,8 +129,8 @@ const Settings = () => {
 
       const { error } = await supabase.from("units").insert({
         user_id: user.id,
-        name: newUnit,
-        name_bn: newUnit,
+        name: newUnit.trim(),
+        name_bn: newUnit.trim(),
       });
 
       if (error) {
@@ -156,7 +177,13 @@ const Settings = () => {
   };
 
   const addFavorite = async () => {
-    if (!newFavorite.name.trim()) return;
+    // Validate input
+    const validation = nameSchema.safeParse({ name: newFavorite.name });
+    if (!validation.success) {
+      const firstError = validation.error.errors[0];
+      toast({ title: "ত্রুটি", description: firstError.message, variant: "destructive" });
+      return;
+    }
 
     try {
       const { data: { user } } = await supabase.auth.getUser();
@@ -164,7 +191,7 @@ const Settings = () => {
 
       const { error } = await supabase.from("favorites").insert({
         user_id: user.id,
-        item_name_bn: newFavorite.name,
+        item_name_bn: newFavorite.name.trim(),
         category_id: newFavorite.categoryId || null,
         display_order: favorites.length,
       });

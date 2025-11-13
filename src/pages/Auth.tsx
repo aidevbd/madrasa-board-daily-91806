@@ -6,6 +6,27 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
+import { z } from "zod";
+
+// Validation schemas
+const authSchema = z.object({
+  email: z.string()
+    .trim()
+    .min(1, "ইমেইল লিখুন")
+    .email("সঠিক ইমেইল লিখুন")
+    .max(255, "ইমেইল সর্বোচ্চ ২৫৫ অক্ষরের হতে পারে"),
+  password: z.string()
+    .min(8, "পাসওয়ার্ড কমপক্ষে ৮ অক্ষরের হতে হবে")
+    .max(100, "পাসওয়ার্ড সর্বোচ্চ ১০০ অক্ষরের হতে পারে")
+});
+
+const emailSchema = z.object({
+  email: z.string()
+    .trim()
+    .min(1, "ইমেইল লিখুন")
+    .email("সঠিক ইমেইল লিখুন")
+    .max(255, "ইমেইল সর্বোচ্চ ২৫৫ অক্ষরের হতে পারে")
+});
 
 const Auth = () => {
   const navigate = useNavigate();
@@ -17,10 +38,13 @@ const Auth = () => {
   const [showForgotPassword, setShowForgotPassword] = useState(false);
 
   const handleAuth = async () => {
-    if (!email || !password) {
+    // Validate input
+    const validation = authSchema.safeParse({ email: email.trim(), password });
+    if (!validation.success) {
+      const firstError = validation.error.errors[0];
       toast({
         title: "ত্রুটি",
-        description: "ইমেইল এবং পাসওয়ার্ড লিখুন",
+        description: firstError.message,
         variant: "destructive",
       });
       return;
@@ -82,10 +106,13 @@ const Auth = () => {
   };
 
   const handleForgotPassword = async () => {
-    if (!email) {
+    // Validate email
+    const validation = emailSchema.safeParse({ email: email.trim() });
+    if (!validation.success) {
+      const firstError = validation.error.errors[0];
       toast({
         title: "ত্রুটি",
-        description: "ইমেইল লিখুন",
+        description: firstError.message,
         variant: "destructive",
       });
       return;
