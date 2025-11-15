@@ -1,4 +1,4 @@
-import { Home, PlusCircle, FileText, Settings, List, ShoppingCart } from "lucide-react";
+import { Home, PlusCircle, FileText, Settings, List, ShoppingCart, DollarSign, User } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
 
 const Navigation = () => {
@@ -8,7 +8,7 @@ const Navigation = () => {
     { path: "/", icon: Home, label: "হোম" },
     { path: "/transactions", icon: List, label: "তালিকা" },
     { path: "/add-expense", icon: PlusCircle, label: "খরচ" },
-    { path: "/bulk-expense", icon: ShoppingCart, label: "বাজার" },
+    { path: "/budget", icon: DollarSign, label: "বাজেট" },
     { path: "/reports", icon: FileText, label: "রিপোর্ট" },
     { path: "/settings", icon: Settings, label: "সেটিংস" },
   ];

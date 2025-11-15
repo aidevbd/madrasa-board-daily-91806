@@ -7,6 +7,7 @@ import { PlusCircle, Wallet, TrendingDown, TrendingUp, History } from "lucide-re
 import Navigation from "@/components/Navigation";
 import { useToast } from "@/hooks/use-toast";
 import { format } from "date-fns";
+import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip } from "recharts";
 
 const Dashboard = () => {
   const navigate = useNavigate();
@@ -16,6 +17,7 @@ const Dashboard = () => {
   const [monthFunds, setMonthFunds] = useState(0);
   const [monthExpenses, setMonthExpenses] = useState(0);
   const [recentTransactions, setRecentTransactions] = useState<any[]>([]);
+  const [categoryExpenses, setCategoryExpenses] = useState<any[]>([]);
 
   useEffect(() => {
     fetchDashboardData();
@@ -64,7 +66,7 @@ const Dashboard = () => {
       // Fetch this month's expenses
       const { data: thisMonthExpenses, error: monthExpensesError } = await supabase
         .from("expenses")
-        .select("total_price")
+        .select("total_price, category_id, expense_categories(name_bn)")
         .eq("user_id", user.id)
         .gte("expense_date", firstDay.toISOString().split("T")[0])
         .lte("expense_date", lastDay.toISOString().split("T")[0]);
@@ -79,6 +81,20 @@ const Dashboard = () => {
       setCurrentBalance(totalFunds - totalExpenses);
       setMonthFunds(monthlyFunds);
       setMonthExpenses(monthlyExpenses);
+
+      // Calculate category expenses for chart
+      const categoryMap = new Map();
+      thisMonthExpenses?.forEach(expense => {
+        const categoryName = expense.expense_categories?.name_bn || "অন্যান্য";
+        const current = categoryMap.get(categoryName) || 0;
+        categoryMap.set(categoryName, current + Number(expense.total_price));
+      });
+
+      const chartData = Array.from(categoryMap.entries()).map(([name, value]) => ({
+        name,
+        value,
+      }));
+      setCategoryExpenses(chartData);
 
       // Get recent transactions
       const recent = [
