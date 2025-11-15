@@ -6,10 +6,11 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Plus, Trash2, LogOut } from "lucide-react";
+import { Plus, Trash2, LogOut, Moon, Sun, Download } from "lucide-react";
 import Navigation from "@/components/Navigation";
 import { useToast } from "@/hooks/use-toast";
 import { z } from "zod";
+import { useTheme } from "@/hooks/useTheme";
 
 // Validation schemas
 const nameSchema = z.object({
@@ -22,6 +23,7 @@ const nameSchema = z.object({
 const Settings = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { theme, toggleTheme } = useTheme();
   const [categories, setCategories] = useState<any[]>([]);
   const [units, setUnits] = useState<any[]>([]);
   const [favorites, setFavorites] = useState<any[]>([]);
@@ -225,6 +227,45 @@ const Settings = () => {
     navigate("/auth");
   };
 
+  const handleBackupDownload = async () => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      const [expensesRes, fundsRes, categoriesRes, unitsRes, favoritesRes] = await Promise.all([
+        supabase.from("expenses").select("*").eq("user_id", user.id),
+        supabase.from("funds").select("*").eq("user_id", user.id),
+        supabase.from("expense_categories").select("*").eq("user_id", user.id),
+        supabase.from("units").select("*").eq("user_id", user.id),
+        supabase.from("favorites").select("*").eq("user_id", user.id)
+      ]);
+
+      const backupData = {
+        expenses: expensesRes.data || [],
+        funds: fundsRes.data || [],
+        categories: categoriesRes.data || [],
+        units: unitsRes.data || [],
+        favorites: favoritesRes.data || [],
+        exportDate: new Date().toISOString()
+      };
+
+      const blob = new Blob([JSON.stringify(backupData, null, 2)], { type: "application/json" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `daily-boarding-backup-${new Date().toISOString().split('T')[0]}.json`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+
+      toast({ title: "সফল", description: "ব্যাকআপ ডাউনলোড হয়েছে" });
+    } catch (error) {
+      console.error("Error downloading backup:", error);
+      toast({ title: "ত্রুটি", description: "ব্যাকআপ ডাউনলোডে সমস্যা", variant: "destructive" });
+    }
+  };
+
   return (
     <div className="min-h-screen bg-muted/30 pb-24">
       <div className="bg-primary text-primary-foreground p-4 shadow-md">
@@ -336,6 +377,23 @@ const Settings = () => {
             </Card>
           </TabsContent>
         </Tabs>
+
+        <Card className="p-4 space-y-4">
+          <div className="flex items-center justify-between">
+            <div>
+              <h3 className="font-semibold">ডার্ক মোড</h3>
+              <p className="text-sm text-muted-foreground">থিম পরিবর্তন করুন</p>
+            </div>
+            <Button variant="outline" size="icon" onClick={toggleTheme}>
+              {theme === "dark" ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+            </Button>
+          </div>
+        </Card>
+
+        <Button variant="outline" className="w-full" onClick={handleBackupDownload}>
+          <Download className="mr-2 h-4 w-4" />
+          ডেটা ব্যাকআপ ডাউনলোড করুন
+        </Button>
 
         <Button
           variant="destructive"

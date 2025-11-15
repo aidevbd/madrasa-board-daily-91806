@@ -11,6 +11,8 @@ import Reports from "./pages/Reports";
 import Settings from "./pages/Settings";
 import Transactions from "./pages/Transactions";
 import BulkExpense from "./pages/BulkExpense";
+import Budget from "./pages/Budget";
+import Profile from "./pages/Profile";
 import Auth from "./pages/Auth";
 import NotFound from "./pages/NotFound";
 
@@ -28,8 +30,10 @@ const App = () => (
           <Route path="/add-expense" element={<ProtectedRoute><AddExpense /></ProtectedRoute>} />
           <Route path="/bulk-expense" element={<ProtectedRoute><BulkExpense /></ProtectedRoute>} />
           <Route path="/add-fund" element={<ProtectedRoute><AddFund /></ProtectedRoute>} />
+          <Route path="/budget" element={<ProtectedRoute><Budget /></ProtectedRoute>} />
           <Route path="/reports" element={<ProtectedRoute><Reports /></ProtectedRoute>} />
           <Route path="/transactions" element={<ProtectedRoute><Transactions /></ProtectedRoute>} />
+          <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
           <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />

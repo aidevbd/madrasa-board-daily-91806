@@ -11,6 +11,7 @@ import { useToast } from "@/hooks/use-toast";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { format } from "date-fns";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 const Transactions = () => {
   const navigate = useNavigate();
@@ -19,6 +20,9 @@ const Transactions = () => {
   const [expenses, setExpenses] = useState<any[]>([]);
   const [funds, setFunds] = useState<any[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
+  const [dateFilter, setDateFilter] = useState("all");
+  const [categoryFilter, setCategoryFilter] = useState("all");
+  const [categories, setCategories] = useState<any[]>([]);
   const [expandedBatches, setExpandedBatches] = useState<Set<string>>(new Set());
   const [deleteDialog, setDeleteDialog] = useState<{ open: boolean; type: 'expense' | 'fund' | 'batch' | null; id: string | null; batchId?: string | null }>({
     open: false,
@@ -36,7 +40,7 @@ const Transactions = () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
 
-      const [expensesRes, fundsRes] = await Promise.all([
+      const [expensesRes, fundsRes, categoriesRes] = await Promise.all([
         supabase
           .from("expenses")
           .select("*, expense_categories(name_bn), units(name_bn)")
@@ -48,11 +52,17 @@ const Transactions = () => {
           .select("*")
           .eq("user_id", user.id)
           .order("fund_date", { ascending: false })
-          .limit(100)
+          .limit(100),
+        supabase
+          .from("expense_categories")
+          .select("*")
+          .eq("user_id", user.id)
+          .order("name_bn")
       ]);
 
       if (expensesRes.data) setExpenses(expensesRes.data);
       if (fundsRes.data) setFunds(fundsRes.data);
+      if (categoriesRes.data) setCategories(categoriesRes.data);
     } catch (error) {
       console.error("Error fetching transactions:", error);
       toast({
@@ -176,14 +186,44 @@ const Transactions = () => {
       </div>
 
       <div className="p-4 space-y-4">
-        <div className="relative">
-          <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-          <Input
-            placeholder="খুঁজুন..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-10"
-          />
+        <div className="space-y-3">
+          <div className="relative">
+            <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+            <Input
+              placeholder="খুঁজুন..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="pl-10"
+            />
+          </div>
+
+          <div className="flex gap-2">
+            <Select value={dateFilter} onValueChange={setDateFilter}>
+              <SelectTrigger className="flex-1">
+                <SelectValue placeholder="তারিখ ফিল্টার" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">সব তারিখ</SelectItem>
+                <SelectItem value="today">আজ</SelectItem>
+                <SelectItem value="week">এই সপ্তাহ</SelectItem>
+                <SelectItem value="month">এই মাস</SelectItem>
+              </SelectContent>
+            </Select>
+
+            <Select value={categoryFilter} onValueChange={setCategoryFilter}>
+              <SelectTrigger className="flex-1">
+                <SelectValue placeholder="ক্যাটাগরি ফিল্টার" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">সব ক্যাটাগরি</SelectItem>
+                {categories.map((cat) => (
+                  <SelectItem key={cat.id} value={cat.id}>
+                    {cat.name_bn}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
         </div>
 
         <Tabs defaultValue="expenses" className="w-full">
