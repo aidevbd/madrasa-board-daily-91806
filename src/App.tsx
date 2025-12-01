@@ -13,6 +13,7 @@ import Transactions from "./pages/Transactions";
 import BulkExpense from "./pages/BulkExpense";
 import Budget from "./pages/Budget";
 import Profile from "./pages/Profile";
+import Receipts from "./pages/Receipts";
 import Auth from "./pages/Auth";
 import NotFound from "./pages/NotFound";
 
@@ -32,6 +33,7 @@ const App = () => (
           <Route path="/add-fund" element={<ProtectedRoute><AddFund /></ProtectedRoute>} />
           <Route path="/budget" element={<ProtectedRoute><Budget /></ProtectedRoute>} />
           <Route path="/reports" element={<ProtectedRoute><Reports /></ProtectedRoute>} />
+          <Route path="/receipts" element={<ProtectedRoute><Receipts /></ProtectedRoute>} />
           <Route path="/transactions" element={<ProtectedRoute><Transactions /></ProtectedRoute>} />
           <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
           <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />

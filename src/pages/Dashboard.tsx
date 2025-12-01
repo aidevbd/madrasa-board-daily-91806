@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { PlusCircle, Wallet, TrendingDown, TrendingUp, History } from "lucide-react";
+import { PlusCircle, Wallet, TrendingDown, TrendingUp, History, Image as ImageIcon } from "lucide-react";
 import Navigation from "@/components/Navigation";
 import { useToast } from "@/hooks/use-toast";
 import { format } from "date-fns";
@@ -185,6 +185,24 @@ const Dashboard = () => {
             <PlusCircle className="mr-2 h-6 w-6" />
             জমা যোগ করুন
           </Button>
+          
+          <div className="grid grid-cols-2 gap-3 pt-2">
+            <Button
+              onClick={() => navigate("/bulk-expense")}
+              variant="outline"
+              className="h-12"
+            >
+              বাজারের তালিকা
+            </Button>
+            <Button
+              onClick={() => navigate("/receipts")}
+              variant="outline"
+              className="h-12"
+            >
+              <ImageIcon className="mr-2 h-4 w-4" />
+              রশিদ গ্যালারি
+            </Button>
+          </div>
         </div>
 
         {recentTransactions.length > 0 && (
