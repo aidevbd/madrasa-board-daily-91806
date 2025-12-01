@@ -10,7 +10,7 @@ import Navigation from "@/components/Navigation";
 import { useToast } from "@/hooks/use-toast";
 import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip, BarChart, Bar, XAxis, YAxis, CartesianGrid } from "recharts";
 import jsPDF from "jspdf";
-import autoTable from "jspdf-autotable";
+import html2canvas from "html2canvas";
 
 const COLORS = ["#10b981", "#3b82f6", "#f59e0b", "#ef4444", "#8b5cf6", "#ec4899"];
 const CACHE_KEY = "last_report_data";
@@ -151,77 +151,161 @@ const Reports = () => {
     });
   };
 
-  const exportPDF = () => {
+  const exportPDF = async () => {
     if (!reportData) return;
 
-    const doc = new jsPDF();
-
-    // Add title
-    doc.setFontSize(18);
-    doc.text("Daily Boarding Manager - Report", 14, 22);
+    // Create a temporary container for PDF content
+    const printContainer = document.createElement('div');
+    printContainer.style.width = '800px';
+    printContainer.style.padding = '20px';
+    printContainer.style.backgroundColor = 'white';
+    printContainer.style.fontFamily = "'Noto Sans Bengali', sans-serif";
+    printContainer.style.position = 'absolute';
+    printContainer.style.left = '-9999px';
     
-    doc.setFontSize(11);
-    doc.text(`Period: ${reportData.startDate} to ${reportData.endDate}`, 14, 30);
-
-    // Summary section
-    doc.setFontSize(14);
-    doc.text("Summary", 14, 42);
+    printContainer.innerHTML = `
+      <div style="padding: 20px;">
+        <h1 style="font-size: 24px; margin-bottom: 10px; color: #333;">রিপোর্ট</h1>
+        <p style="font-size: 14px; color: #666; margin-bottom: 20px;">
+          ${reportData.startDate} থেকে ${reportData.endDate}
+        </p>
+        
+        <div style="margin-bottom: 20px;">
+          <h2 style="font-size: 18px; margin-bottom: 10px; color: #333;">সারসংক্ষেপ</h2>
+          <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 20px;">
+            <div style="background: #f0fdf4; padding: 15px; border-radius: 8px;">
+              <p style="font-size: 12px; color: #666;">মোট জমা</p>
+              <p style="font-size: 18px; font-weight: bold; color: #16a34a;">৳ ${reportData.totalFunds.toFixed(2)}</p>
+            </div>
+            <div style="background: #fef2f2; padding: 15px; border-radius: 8px;">
+              <p style="font-size: 12px; color: #666;">মোট খরচ</p>
+              <p style="font-size: 18px; font-weight: bold; color: #dc2626;">৳ ${reportData.totalExpenses.toFixed(2)}</p>
+            </div>
+            <div style="background: #f0f9ff; padding: 15px; border-radius: 8px;">
+              <p style="font-size: 12px; color: #666;">ব্যালেন্স</p>
+              <p style="font-size: 18px; font-weight: bold; color: #2563eb;">৳ ${reportData.balance.toFixed(2)}</p>
+            </div>
+          </div>
+        </div>
+        
+        <div style="margin-bottom: 20px;">
+          <h2 style="font-size: 18px; margin-bottom: 10px; color: #333;">ক্যাটাগরি অনুযায়ী</h2>
+          <table style="width: 100%; border-collapse: collapse;">
+            <thead>
+              <tr style="background: #f3f4f6;">
+                <th style="padding: 10px; text-align: left; border-bottom: 2px solid #e5e7eb;">ক্যাটাগরি</th>
+                <th style="padding: 10px; text-align: right; border-bottom: 2px solid #e5e7eb;">পরিমাণ</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${Object.entries(reportData.categoryBreakdown).map(([category, amount]: any) => `
+                <tr>
+                  <td style="padding: 8px; border-bottom: 1px solid #e5e7eb;">${category}</td>
+                  <td style="padding: 8px; text-align: right; border-bottom: 1px solid #e5e7eb;">৳ ${amount.toFixed(2)}</td>
+                </tr>
+              `).join('')}
+            </tbody>
+          </table>
+        </div>
+        
+        <div style="margin-bottom: 20px;">
+          <h2 style="font-size: 18px; margin-bottom: 10px; color: #333;">খরচের তালিকা</h2>
+          <table style="width: 100%; border-collapse: collapse;">
+            <thead>
+              <tr style="background: #f3f4f6;">
+                <th style="padding: 10px; text-align: left; border-bottom: 2px solid #e5e7eb;">তারিখ</th>
+                <th style="padding: 10px; text-align: left; border-bottom: 2px solid #e5e7eb;">বিবরণ</th>
+                <th style="padding: 10px; text-align: left; border-bottom: 2px solid #e5e7eb;">ক্যাটাগরি</th>
+                <th style="padding: 10px; text-align: right; border-bottom: 2px solid #e5e7eb;">পরিমাণ</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${reportData.expenses.map((expense: any) => `
+                <tr>
+                  <td style="padding: 8px; border-bottom: 1px solid #e5e7eb;">${expense.expense_date}</td>
+                  <td style="padding: 8px; border-bottom: 1px solid #e5e7eb;">${expense.item_name_bn}</td>
+                  <td style="padding: 8px; border-bottom: 1px solid #e5e7eb;">${expense.expense_categories?.name_bn || ''}</td>
+                  <td style="padding: 8px; text-align: right; border-bottom: 1px solid #e5e7eb; color: #dc2626;">৳ ${Number(expense.total_price).toFixed(2)}</td>
+                </tr>
+              `).join('')}
+            </tbody>
+          </table>
+        </div>
+        
+        ${reportData.funds.length > 0 ? `
+          <div>
+            <h2 style="font-size: 18px; margin-bottom: 10px; color: #333;">জমার তালিকা</h2>
+            <table style="width: 100%; border-collapse: collapse;">
+              <thead>
+                <tr style="background: #f3f4f6;">
+                  <th style="padding: 10px; text-align: left; border-bottom: 2px solid #e5e7eb;">তারিখ</th>
+                  <th style="padding: 10px; text-align: left; border-bottom: 2px solid #e5e7eb;">বিবরণ</th>
+                  <th style="padding: 10px; text-align: right; border-bottom: 2px solid #e5e7eb;">পরিমাণ</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${reportData.funds.map((fund: any) => `
+                  <tr>
+                    <td style="padding: 8px; border-bottom: 1px solid #e5e7eb;">${fund.fund_date}</td>
+                    <td style="padding: 8px; border-bottom: 1px solid #e5e7eb;">${fund.source_note_bn || 'জমা'}</td>
+                    <td style="padding: 8px; text-align: right; border-bottom: 1px solid #e5e7eb; color: #16a34a;">৳ ${Number(fund.amount).toFixed(2)}</td>
+                  </tr>
+                `).join('')}
+              </tbody>
+            </table>
+          </div>
+        ` : ''}
+      </div>
+    `;
     
-    doc.setFontSize(11);
-    doc.text(`Total Funds: ${reportData.totalFunds.toFixed(2)} Tk`, 14, 50);
-    doc.text(`Total Expenses: ${reportData.totalExpenses.toFixed(2)} Tk`, 14, 57);
-    doc.text(`Balance: ${reportData.balance.toFixed(2)} Tk`, 14, 64);
-
-    // Category breakdown
-    doc.setFontSize(14);
-    doc.text("Category Breakdown", 14, 76);
-
-    const categoryData = Object.entries(reportData.categoryBreakdown).map(([category, amount]: any) => [
-      category,
-      `${amount.toFixed(2)} Tk`
-    ]);
-
-    autoTable(doc, {
-      startY: 82,
-      head: [["Category", "Amount"]],
-      body: categoryData,
-    });
-
-    // Expenses table
-    const expenseData = reportData.expenses.map((expense: any) => [
-      expense.expense_date,
-      expense.item_name_bn,
-      expense.expense_categories?.name_bn || "",
-      `${Number(expense.total_price).toFixed(2)} Tk`
-    ]);
-
-    autoTable(doc, {
-      startY: (doc as any).lastAutoTable.finalY + 10,
-      head: [["Date", "Item", "Category", "Amount"]],
-      body: expenseData,
-    });
-
-    // Funds table
-    if (reportData.funds.length > 0) {
-      const fundData = reportData.funds.map((fund: any) => [
-        fund.fund_date,
-        fund.source_note_bn || "Fund",
-        `${Number(fund.amount).toFixed(2)} Tk`
-      ]);
-
-      autoTable(doc, {
-        startY: (doc as any).lastAutoTable.finalY + 10,
-        head: [["Date", "Source", "Amount"]],
-        body: fundData,
+    document.body.appendChild(printContainer);
+    
+    try {
+      const canvas = await html2canvas(printContainer, {
+        scale: 2,
+        useCORS: true,
+        logging: false,
       });
+      
+      const imgData = canvas.toDataURL('image/png');
+      const pdf = new jsPDF({
+        orientation: 'portrait',
+        unit: 'mm',
+        format: 'a4',
+      });
+      
+      const imgWidth = 210;
+      const pageHeight = 297;
+      const imgHeight = (canvas.height * imgWidth) / canvas.width;
+      let heightLeft = imgHeight;
+      let position = 0;
+      
+      pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+      heightLeft -= pageHeight;
+      
+      while (heightLeft > 0) {
+        position = heightLeft - imgHeight;
+        pdf.addPage();
+        pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+        heightLeft -= pageHeight;
+      }
+      
+      pdf.save(`report_${reportData.startDate}_${reportData.endDate}.pdf`);
+      
+      toast({
+        title: "PDF রপ্তানি সফল",
+        description: "ফাইল ডাউনলোড হয়েছে",
+      });
+    } catch (error) {
+      console.error('PDF export error:', error);
+      toast({
+        title: "ত্রুটি",
+        description: "PDF রপ্তানি করতে সমস্যা হয়েছে",
+        variant: "destructive",
+      });
+    } finally {
+      document.body.removeChild(printContainer);
     }
-
-    doc.save(`report_${reportData.startDate}_${reportData.endDate}.pdf`);
-
-    toast({
-      title: "PDF রপ্তানি সফল",
-      description: "ফাইল ডাউনলোড হয়েছে",
-    });
   };
 
   // Prepare chart data
