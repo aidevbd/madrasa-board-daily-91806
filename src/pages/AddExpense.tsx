@@ -82,6 +82,8 @@ const AddExpense = () => {
     });
   };
 
+  const [processingOCR, setProcessingOCR] = useState(false);
+
   const handleReceiptUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file) return;
@@ -116,24 +118,30 @@ const AddExpense = () => {
       const fileName = `${user.id}/${Date.now()}.${fileExt}`;
 
       // Upload to Supabase Storage
-      const { error: uploadError, data } = await supabase.storage
+      const { error: uploadError } = await supabase.storage
         .from('receipts')
         .upload(fileName, file);
 
       if (uploadError) throw uploadError;
 
-      // Get public URL
-      const { data: { publicUrl } } = supabase.storage
+      // Get signed URL for OCR
+      const { data: signedData } = await supabase.storage
         .from('receipts')
-        .getPublicUrl(fileName);
+        .createSignedUrl(fileName, 3600);
 
-      setFormData({ ...formData, receipt_image_url: publicUrl });
+      if (!signedData) throw new Error("Failed to get signed URL");
+
+      const imageUrl = signedData.signedUrl;
+      setFormData({ ...formData, receipt_image_url: imageUrl });
       setReceiptPreview(URL.createObjectURL(file));
 
       toast({
         title: "সফল",
         description: "রশিদ আপলোড হয়েছে",
       });
+
+      // Process OCR
+      processReceiptOCR(imageUrl);
     } catch (error) {
       console.error("Error uploading receipt:", error);
       toast({
@@ -143,6 +151,70 @@ const AddExpense = () => {
       });
     } finally {
       setUploadingReceipt(false);
+    }
+  };
+
+  const processReceiptOCR = async (imageUrl: string) => {
+    setProcessingOCR(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('ocr-receipt', {
+        body: { imageUrl }
+      });
+
+      if (error) throw error;
+
+      if (data.success && data.data) {
+        const ocrData = data.data;
+        
+        // Auto-fill form with OCR data
+        const updates: any = {};
+        
+        if (ocrData.total) {
+          updates.total_price = String(ocrData.total);
+        }
+        
+        if (ocrData.date) {
+          updates.expense_date = ocrData.date;
+        }
+        
+        // If there's only one item, use it
+        if (ocrData.items && ocrData.items.length === 1) {
+          const item = ocrData.items[0];
+          updates.item_name_bn = item.name;
+          if (item.quantity) {
+            updates.quantity = String(item.quantity);
+          }
+          if (item.price) {
+            updates.total_price = String(item.price);
+          }
+        } else if (ocrData.items && ocrData.items.length > 1) {
+          // Multiple items found - suggest user to use bulk expense
+          toast({
+            title: "একাধিক আইটেম পাওয়া গেছে",
+            description: "বাজারের তালিকা পেজ ব্যবহার করুন একাধিক আইটেমের জন্য",
+          });
+        }
+        
+        if (ocrData.shop) {
+          updates.notes = ocrData.shop;
+        }
+
+        setFormData(prev => ({ ...prev, ...updates }));
+
+        toast({
+          title: "OCR সফল",
+          description: "রশিদ থেকে তথ্য স্বয়ংক্রিয়ভাবে পূরণ করা হয়েছে",
+        });
+      }
+    } catch (error) {
+      console.error("OCR processing error:", error);
+      toast({
+        title: "OCR ত্রুটি",
+        description: "রশিদ থেকে তথ্য বের করতে সমস্যা হয়েছে",
+        variant: "destructive",
+      });
+    } finally {
+      setProcessingOCR(false);
     }
   };
 
@@ -345,6 +417,11 @@ const AddExpense = () => {
 
           <div className="space-y-2">
             <Label htmlFor="receipt">রশিদ আপলোড</Label>
+            {processingOCR && (
+              <div className="bg-blue-50 dark:bg-blue-950/20 p-3 rounded-lg text-sm text-blue-600 dark:text-blue-400">
+                🤖 OCR প্রসেসিং চলছে... রশিদ থেকে তথ্য বের করা হচ্ছে
+              </div>
+            )}
             {receiptPreview && (
               <div className="relative w-full h-40 bg-muted rounded-lg overflow-hidden mb-2">
                 <img src={receiptPreview} alt="Receipt preview" className="w-full h-full object-cover" />
@@ -369,20 +446,23 @@ const AddExpense = () => {
                 accept="image/*"
                 capture="environment"
                 onChange={handleReceiptUpload}
-                disabled={uploadingReceipt}
+                disabled={uploadingReceipt || processingOCR}
                 className="hidden"
               />
               <Button
                 type="button"
                 variant="outline"
                 className="flex-1"
-                disabled={uploadingReceipt}
+                disabled={uploadingReceipt || processingOCR}
                 onClick={() => document.getElementById('receipt')?.click()}
               >
                 <Camera className="mr-2 h-4 w-4" />
-                {uploadingReceipt ? "আপলোড হচ্ছে..." : "ছবি তুলুন"}
+                {uploadingReceipt ? "আপলোড হচ্ছে..." : processingOCR ? "প্রসেসিং..." : "ছবি তুলুন"}
               </Button>
             </div>
+            <p className="text-xs text-muted-foreground">
+              💡 রশিদ আপলোড করলে স্বয়ংক্রিয়ভাবে তথ্য পূরণ হবে
+            </p>
           </div>
         </Card>
 
