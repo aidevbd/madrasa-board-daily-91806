@@ -5,7 +5,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { FileDown, Printer, FileText } from "lucide-react";
+import { FileDown, Printer, FileText, Image } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import Navigation from "@/components/Navigation";
 import { useToast } from "@/hooks/use-toast";
 import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip, BarChart, Bar, XAxis, YAxis, CartesianGrid } from "recharts";
@@ -17,6 +18,7 @@ const CACHE_KEY = "last_report_data";
 
 const Reports = () => {
   const { toast } = useToast();
+  const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [reportData, setReportData] = useState<any>(null);
   const [dateRange, setDateRange] = useState({
@@ -331,6 +333,18 @@ const Reports = () => {
       </div>
 
       <div className="p-4 space-y-4">
+        <Card className="p-4">
+          <div className="flex items-center justify-between">
+            <div>
+              <h3 className="font-semibold">রশিদ গ্যালারি</h3>
+              <p className="text-sm text-muted-foreground">সব রশিদ দেখুন এবং খুঁজুন</p>
+            </div>
+            <Button variant="outline" size="icon" onClick={() => navigate("/receipts")}>
+              <Image className="h-4 w-4" />
+            </Button>
+          </div>
+        </Card>
+
         <Tabs defaultValue="daily" className="w-full">
           <TabsList className="grid w-full grid-cols-3">
             <TabsTrigger value="daily">দৈনিক</TabsTrigger>

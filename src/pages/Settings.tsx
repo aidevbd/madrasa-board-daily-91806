@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Plus, Trash2, LogOut, Moon, Sun, Download } from "lucide-react";
+import { Plus, Trash2, LogOut, Moon, Sun, Download, DollarSign } from "lucide-react";
 import Navigation from "@/components/Navigation";
 import { useToast } from "@/hooks/use-toast";
 import { z } from "zod";
@@ -377,6 +377,18 @@ const Settings = () => {
             </Card>
           </TabsContent>
         </Tabs>
+
+        <Card className="p-4 space-y-4">
+          <div className="flex items-center justify-between">
+            <div>
+              <h3 className="font-semibold">বাজেট</h3>
+              <p className="text-sm text-muted-foreground">মাসিক বাজেট ম্যানেজ করুন</p>
+            </div>
+            <Button variant="outline" size="icon" onClick={() => navigate("/budget")}>
+              <DollarSign className="h-4 w-4" />
+            </Button>
+          </div>
+        </Card>
 
         <Card className="p-4 space-y-4">
           <div className="flex items-center justify-between">
