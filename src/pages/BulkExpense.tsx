@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { ArrowLeft, Plus, Trash2 } from "lucide-react";
+import { ArrowLeft, Plus, Trash2, Camera } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import Navigation from "@/components/Navigation";
@@ -44,6 +44,10 @@ export default function BulkExpense() {
     { id: crypto.randomUUID(), item_name_bn: "", quantity: "", unit_id: "", unit_price: "", total_price: 0 }
   ]);
   const [loading, setLoading] = useState(false);
+  const [uploadingReceipt, setUploadingReceipt] = useState(false);
+  const [processingOCR, setProcessingOCR] = useState(false);
+  const [receiptPreview, setReceiptPreview] = useState<string | null>(null);
+  const [receiptImageUrl, setReceiptImageUrl] = useState<string>("");
 
   useEffect(() => {
     fetchCategories();
@@ -99,6 +103,102 @@ export default function BulkExpense() {
     const totalItems = items.filter(item => item.item_name_bn.trim() !== "").length;
     const totalAmount = items.reduce((sum, item) => sum + item.total_price, 0);
     return { totalItems, totalAmount };
+  };
+
+  const handleReceiptUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    // Validate file type
+    if (!file.type.startsWith('image/')) {
+      toast.error("শুধুমাত্র ছবি আপলোড করুন");
+      return;
+    }
+
+    // Validate file size (max 5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error("ছবির সাইজ সর্বোচ্চ ৫ MB হতে পারে");
+      return;
+    }
+
+    setUploadingReceipt(true);
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error("User not authenticated");
+
+      // Create unique filename
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${user.id}/${Date.now()}.${fileExt}`;
+
+      // Upload to Supabase Storage
+      const { error: uploadError } = await supabase.storage
+        .from('receipts')
+        .upload(fileName, file);
+
+      if (uploadError) throw uploadError;
+
+      // Get signed URL for OCR
+      const { data: signedData } = await supabase.storage
+        .from('receipts')
+        .createSignedUrl(fileName, 3600);
+
+      if (!signedData) throw new Error("Failed to get signed URL");
+
+      const imageUrl = signedData.signedUrl;
+      setReceiptImageUrl(imageUrl);
+      setReceiptPreview(URL.createObjectURL(file));
+
+      toast.success("রশিদ আপলোড হয়েছে");
+
+      // Process OCR
+      processReceiptOCR(imageUrl);
+    } catch (error) {
+      console.error("Error uploading receipt:", error);
+      toast.error("রশিদ আপলোড করতে সমস্যা হয়েছে");
+    } finally {
+      setUploadingReceipt(false);
+    }
+  };
+
+  const processReceiptOCR = async (imageUrl: string) => {
+    setProcessingOCR(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('ocr-receipt', {
+        body: { imageUrl }
+      });
+
+      if (error) throw error;
+
+      if (data.success && data.data) {
+        const ocrData = data.data;
+        
+        // Auto-fill items with OCR data
+        if (ocrData.items && ocrData.items.length > 0) {
+          const newItems = ocrData.items.map((item: any) => ({
+            id: crypto.randomUUID(),
+            item_name_bn: item.name || "",
+            quantity: item.quantity ? String(item.quantity) : "",
+            unit_id: "",
+            unit_price: item.price ? String(item.price) : "",
+            total_price: item.price && item.quantity ? item.price * item.quantity : (item.price || 0)
+          }));
+          
+          setItems(newItems);
+        }
+        
+        // Set date if available
+        if (ocrData.date) {
+          setExpenseDate(ocrData.date);
+        }
+
+        toast.success("রশিদ থেকে তথ্য স্বয়ংক্রিয়ভাবে পূরণ করা হয়েছে");
+      }
+    } catch (error) {
+      console.error("OCR processing error:", error);
+      toast.error("রশিদ থেকে তথ্য বের করতে সমস্যা হয়েছে");
+    } finally {
+      setProcessingOCR(false);
+    }
   };
 
   const handleSubmit = async () => {
@@ -161,7 +261,8 @@ export default function BulkExpense() {
         quantity: parseFloat(item.quantity),
         unit_id: item.unit_id || null,
         total_price: parseFloat(item.total_price.toFixed(2)),
-        batch_id: batchId
+        batch_id: batchId,
+        receipt_image_url: receiptImageUrl || null
       }));
 
       const { error } = await supabase.from("expenses").insert(expensesToInsert);
@@ -190,7 +291,7 @@ export default function BulkExpense() {
       </div>
 
       <div className="container mx-auto p-4 space-y-4">
-        <Card className="p-4">
+        <Card className="p-4 space-y-4">
           <div className="space-y-2">
             <Label>তারিখ</Label>
             <Input
@@ -199,6 +300,71 @@ export default function BulkExpense() {
               onChange={(e) => setExpenseDate(e.target.value)}
               className="w-full"
             />
+          </div>
+
+          <div className="space-y-2">
+            <Label>রশিদ আপলোড (ঐচ্ছিক)</Label>
+            {processingOCR && (
+              <div className="bg-blue-50 dark:bg-blue-950/20 p-3 rounded-lg text-sm text-blue-600 dark:text-blue-400">
+                🤖 OCR প্রসেসিং চলছে... রশিদ থেকে তথ্য বের করা হচ্ছে
+              </div>
+            )}
+            {receiptPreview && (
+              <div className="relative w-full h-40 bg-muted rounded-lg overflow-hidden mb-2">
+                <img src={receiptPreview} alt="Receipt preview" className="w-full h-full object-cover" />
+                <Button
+                  type="button"
+                  variant="destructive"
+                  size="sm"
+                  className="absolute top-2 right-2"
+                  onClick={() => {
+                    setReceiptPreview(null);
+                    setReceiptImageUrl("");
+                  }}
+                >
+                  মুছুন
+                </Button>
+              </div>
+            )}
+            <div className="grid grid-cols-2 gap-2">
+              <Input
+                id="bulk-receipt-camera"
+                type="file"
+                accept="image/*"
+                capture="environment"
+                onChange={handleReceiptUpload}
+                disabled={uploadingReceipt || processingOCR}
+                className="hidden"
+              />
+              <Input
+                id="bulk-receipt-gallery"
+                type="file"
+                accept="image/*"
+                onChange={handleReceiptUpload}
+                disabled={uploadingReceipt || processingOCR}
+                className="hidden"
+              />
+              <Button
+                type="button"
+                variant="outline"
+                disabled={uploadingReceipt || processingOCR}
+                onClick={() => document.getElementById('bulk-receipt-camera')?.click()}
+              >
+                <Camera className="mr-2 h-4 w-4" />
+                {uploadingReceipt ? "আপলোড হচ্ছে..." : "ক্যামারা"}
+              </Button>
+              <Button
+                type="button"
+                variant="outline"
+                disabled={uploadingReceipt || processingOCR}
+                onClick={() => document.getElementById('bulk-receipt-gallery')?.click()}
+              >
+                📁 গ্যালারি
+              </Button>
+            </div>
+            <p className="text-xs text-muted-foreground">
+              💡 রশিদ আপলোড করলে স্বয়ংক্রিয়ভাবে সব আইটেম পূরণ হবে
+            </p>
           </div>
         </Card>
 

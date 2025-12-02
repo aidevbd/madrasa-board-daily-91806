@@ -439,9 +439,9 @@ const AddExpense = () => {
                 </Button>
               </div>
             )}
-            <div className="flex gap-2">
+            <div className="grid grid-cols-2 gap-2">
               <Input
-                id="receipt"
+                id="receipt-camera"
                 type="file"
                 accept="image/*"
                 capture="environment"
@@ -449,15 +449,30 @@ const AddExpense = () => {
                 disabled={uploadingReceipt || processingOCR}
                 className="hidden"
               />
+              <Input
+                id="receipt-gallery"
+                type="file"
+                accept="image/*"
+                onChange={handleReceiptUpload}
+                disabled={uploadingReceipt || processingOCR}
+                className="hidden"
+              />
               <Button
                 type="button"
                 variant="outline"
-                className="flex-1"
                 disabled={uploadingReceipt || processingOCR}
-                onClick={() => document.getElementById('receipt')?.click()}
+                onClick={() => document.getElementById('receipt-camera')?.click()}
               >
                 <Camera className="mr-2 h-4 w-4" />
-                {uploadingReceipt ? "আপলোড হচ্ছে..." : processingOCR ? "প্রসেসিং..." : "ছবি তুলুন"}
+                {uploadingReceipt ? "আপলোড হচ্ছে..." : "ক্যামারা"}
+              </Button>
+              <Button
+                type="button"
+                variant="outline"
+                disabled={uploadingReceipt || processingOCR}
+                onClick={() => document.getElementById('receipt-gallery')?.click()}
+              >
+                📁 গ্যালারি
               </Button>
             </div>
             <p className="text-xs text-muted-foreground">
