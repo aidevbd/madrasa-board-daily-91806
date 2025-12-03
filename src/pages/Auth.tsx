@@ -139,61 +139,64 @@ const Auth = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-primary/10 to-muted/30 p-4">
-      <Card className="w-full max-w-md p-6 space-y-6">
-        <div className="text-center space-y-2">
-          <h1 className="text-3xl font-bold text-primary">দৈনিক বোর্ডিং ম্যানেজার</h1>
-          <p className="text-muted-foreground">আপনার বোর্ডিং পরিচালনা সহজ করুন</p>
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-primary/10 to-muted/30 p-4 md:p-6 lg:p-8">
+      <Card className="w-full max-w-md md:max-w-lg p-6 md:p-8 space-y-6 md:space-y-8">
+        <div className="text-center space-y-2 md:space-y-3">
+          <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold text-primary">দৈনিক বোর্ডিং ম্যানেজার</h1>
+          <p className="text-muted-foreground text-sm md:text-base lg:text-lg">আপনার বোর্ডিং পরিচালনা সহজ করুন</p>
         </div>
 
         {showForgotPassword ? (
-          <div className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="reset-email">ইমেইল</Label>
+          <div className="space-y-4 md:space-y-5">
+            <div className="space-y-2 md:space-y-3">
+              <Label htmlFor="reset-email" className="text-sm md:text-base">ইমেইল</Label>
               <Input
                 id="reset-email"
                 type="email"
                 placeholder="your@email.com"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
+                className="h-10 md:h-12 text-sm md:text-base"
               />
             </div>
-            <Button onClick={handleForgotPassword} disabled={loading} className="w-full">
+            <Button onClick={handleForgotPassword} disabled={loading} className="w-full h-10 md:h-12 text-sm md:text-base">
               পাসওয়ার্ড রিসেট লিংক পাঠান
             </Button>
             <Button
               variant="ghost"
               onClick={() => setShowForgotPassword(false)}
-              className="w-full"
+              className="w-full h-10 md:h-12 text-sm md:text-base"
             >
               ফিরে যান
             </Button>
           </div>
         ) : (
-          <div className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="email">ইমেইল</Label>
+          <div className="space-y-4 md:space-y-5">
+            <div className="space-y-2 md:space-y-3">
+              <Label htmlFor="email" className="text-sm md:text-base">ইমেইল</Label>
               <Input
                 id="email"
                 type="email"
                 placeholder="your@email.com"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
+                className="h-10 md:h-12 text-sm md:text-base"
               />
             </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="password">পাসওয়ার্ড</Label>
+            <div className="space-y-2 md:space-y-3">
+              <Label htmlFor="password" className="text-sm md:text-base">পাসওয়ার্ড</Label>
               <Input
                 id="password"
                 type="password"
                 placeholder="••••••••"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
+                className="h-10 md:h-12 text-sm md:text-base"
               />
             </div>
 
-            <Button onClick={handleAuth} disabled={loading} className="w-full">
+            <Button onClick={handleAuth} disabled={loading} className="w-full h-10 md:h-12 text-sm md:text-base">
               {isLogin ? "লগ ইন" : "সাইন আপ"}
             </Button>
 
@@ -201,13 +204,13 @@ const Auth = () => {
               <Button
                 variant="link"
                 onClick={() => setShowForgotPassword(true)}
-                className="w-full text-sm"
+                className="w-full text-sm md:text-base"
               >
                 পাসওয়ার্ড ভুলে গেছেন?
               </Button>
             )}
 
-            <div className="text-center text-sm">
+            <div className="text-center text-sm md:text-base">
               <button
                 onClick={() => setIsLogin(!isLogin)}
                 className="text-primary hover:underline"

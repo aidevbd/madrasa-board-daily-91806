@@ -289,33 +289,33 @@ const AddExpense = () => {
   };
 
   return (
-    <div className="min-h-screen bg-muted/30 pb-24">
-      <div className="bg-primary text-primary-foreground p-4 sticky top-0 z-10 shadow-md">
-        <div className="flex items-center gap-3">
+    <div className="min-h-screen bg-muted/30 pb-24 md:pb-28 lg:pb-32">
+      <div className="bg-primary text-primary-foreground p-4 md:p-6 sticky top-0 z-10 shadow-md">
+        <div className="flex items-center gap-3 md:gap-4 max-w-2xl mx-auto">
           <Button
             variant="ghost"
             size="icon"
             onClick={() => navigate("/")}
             className="text-primary-foreground hover:bg-primary-foreground/10"
           >
-            <ArrowLeft className="h-5 w-5" />
+            <ArrowLeft className="h-5 w-5 md:h-6 md:w-6" />
           </Button>
-          <h1 className="text-xl font-bold">খরচ যুক্ত করুন</h1>
+          <h1 className="text-xl md:text-2xl lg:text-3xl font-bold">খরচ যুক্ত করুন</h1>
         </div>
       </div>
 
-      <div className="p-4 space-y-4">
+      <div className="p-4 md:p-6 lg:p-8 space-y-4 md:space-y-6 max-w-2xl mx-auto">
         {favorites.length > 0 && (
-          <Card className="p-4">
-            <Label className="text-sm font-semibold mb-3 block">প্রিয় আইটেম</Label>
-            <div className="flex flex-wrap gap-2">
+          <Card className="p-4 md:p-6">
+            <Label className="text-sm md:text-base font-semibold mb-3 md:mb-4 block">প্রিয় আইটেম</Label>
+            <div className="flex flex-wrap gap-2 md:gap-3">
               {favorites.map((fav) => (
                 <Button
                   key={fav.id}
                   variant="outline"
                   size="sm"
                   onClick={() => handleFavoriteSelect(fav)}
-                  className="text-sm"
+                  className="text-sm md:text-base h-9 md:h-10"
                 >
                   {fav.item_name_bn}
                 </Button>
@@ -324,36 +324,38 @@ const AddExpense = () => {
           </Card>
         )}
 
-        <Card className="p-4 space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="date">তারিখ</Label>
+        <Card className="p-4 md:p-6 space-y-4 md:space-y-5">
+          <div className="space-y-2 md:space-y-3">
+            <Label htmlFor="date" className="text-sm md:text-base">তারিখ</Label>
             <Input
               id="date"
               type="date"
               value={formData.expense_date}
               onChange={(e) => setFormData({ ...formData, expense_date: e.target.value })}
+              className="h-10 md:h-12 text-sm md:text-base"
             />
           </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="item">আইটেমের নাম *</Label>
+          <div className="space-y-2 md:space-y-3">
+            <Label htmlFor="item" className="text-sm md:text-base">আইটেমের নাম *</Label>
             <Input
               id="item"
               placeholder="যেমন: আলু, পেঁয়াজ"
               value={formData.item_name_bn}
               onChange={(e) => setFormData({ ...formData, item_name_bn: e.target.value })}
+              className="h-10 md:h-12 text-sm md:text-base"
             />
           </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="category">ক্যাটাগরি</Label>
+          <div className="space-y-2 md:space-y-3">
+            <Label htmlFor="category" className="text-sm md:text-base">ক্যাটাগরি</Label>
             <Select value={formData.category_id} onValueChange={(value) => setFormData({ ...formData, category_id: value })}>
-              <SelectTrigger>
+              <SelectTrigger className="h-10 md:h-12 text-sm md:text-base">
                 <SelectValue placeholder="ক্যাটাগরি নির্বাচন করুন" />
               </SelectTrigger>
               <SelectContent>
                 {categories.map((cat) => (
-                  <SelectItem key={cat.id} value={cat.id}>
+                  <SelectItem key={cat.id} value={cat.id} className="text-sm md:text-base">
                     {cat.name_bn}
                   </SelectItem>
                 ))}
@@ -361,9 +363,9 @@ const AddExpense = () => {
             </Select>
           </div>
 
-          <div className="grid grid-cols-2 gap-3">
-            <div className="space-y-2">
-              <Label htmlFor="quantity">পরিমাণ</Label>
+          <div className="grid grid-cols-2 gap-3 md:gap-4">
+            <div className="space-y-2 md:space-y-3">
+              <Label htmlFor="quantity" className="text-sm md:text-base">পরিমাণ</Label>
               <Input
                 id="quantity"
                 type="number"
@@ -372,18 +374,19 @@ const AddExpense = () => {
                 placeholder="0.00"
                 value={formData.quantity}
                 onChange={(e) => setFormData({ ...formData, quantity: e.target.value })}
+                className="h-10 md:h-12 text-sm md:text-base"
               />
             </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="unit">একক</Label>
+            <div className="space-y-2 md:space-y-3">
+              <Label htmlFor="unit" className="text-sm md:text-base">একক</Label>
               <Select value={formData.unit_id} onValueChange={(value) => setFormData({ ...formData, unit_id: value })}>
-                <SelectTrigger>
+                <SelectTrigger className="h-10 md:h-12 text-sm md:text-base">
                   <SelectValue placeholder="একক" />
                 </SelectTrigger>
                 <SelectContent>
                   {units.map((unit) => (
-                    <SelectItem key={unit.id} value={unit.id}>
+                    <SelectItem key={unit.id} value={unit.id} className="text-sm md:text-base">
                       {unit.name_bn}
                     </SelectItem>
                   ))}
@@ -392,8 +395,8 @@ const AddExpense = () => {
             </div>
           </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="price">মোট মূল্য *</Label>
+          <div className="space-y-2 md:space-y-3">
+            <Label htmlFor="price" className="text-sm md:text-base">মোট মূল্য *</Label>
             <Input
               id="price"
               type="number"
@@ -402,16 +405,18 @@ const AddExpense = () => {
               placeholder="০.০০"
               value={formData.total_price}
               onChange={(e) => setFormData({ ...formData, total_price: e.target.value })}
+              className="h-10 md:h-12 text-sm md:text-base"
             />
           </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="notes">নোট</Label>
+          <div className="space-y-2 md:space-y-3">
+            <Label htmlFor="notes" className="text-sm md:text-base">নোট</Label>
             <Input
               id="notes"
               placeholder="অতিরিক্ত তথ্য"
               value={formData.notes}
               onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
+              className="h-10 md:h-12 text-sm md:text-base"
             />
           </div>
 

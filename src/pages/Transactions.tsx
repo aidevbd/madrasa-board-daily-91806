@@ -170,54 +170,54 @@ const Transactions = () => {
   }
 
   return (
-    <div className="min-h-screen bg-muted/30 pb-24">
-      <div className="bg-primary text-primary-foreground p-4 sticky top-0 z-10 shadow-md">
-        <div className="flex items-center gap-3">
+    <div className="min-h-screen bg-muted/30 pb-24 md:pb-28 lg:pb-32">
+      <div className="bg-primary text-primary-foreground p-4 md:p-6 sticky top-0 z-10 shadow-md">
+        <div className="flex items-center gap-3 md:gap-4 max-w-4xl mx-auto">
           <Button
             variant="ghost"
             size="icon"
             onClick={() => navigate("/")}
             className="text-primary-foreground hover:bg-primary-foreground/10"
           >
-            <ArrowLeft className="h-5 w-5" />
+            <ArrowLeft className="h-5 w-5 md:h-6 md:w-6" />
           </Button>
-          <h1 className="text-xl font-bold">লেনদেনের তালিকা</h1>
+          <h1 className="text-xl md:text-2xl lg:text-3xl font-bold">লেনদেনের তালিকা</h1>
         </div>
       </div>
 
-      <div className="p-4 space-y-4">
-        <div className="space-y-3">
+      <div className="p-4 md:p-6 lg:p-8 space-y-4 md:space-y-6 max-w-4xl mx-auto">
+        <div className="space-y-3 md:space-y-4">
           <div className="relative">
-            <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+            <Search className="absolute left-3 top-3 md:top-4 h-4 w-4 md:h-5 md:w-5 text-muted-foreground" />
             <Input
               placeholder="খুঁজুন..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-10"
+              className="pl-10 md:pl-12 h-10 md:h-12 text-sm md:text-base"
             />
           </div>
 
-          <div className="flex gap-2">
+          <div className="flex gap-2 md:gap-4">
             <Select value={dateFilter} onValueChange={setDateFilter}>
-              <SelectTrigger className="flex-1">
+              <SelectTrigger className="flex-1 h-10 md:h-12 text-sm md:text-base">
                 <SelectValue placeholder="তারিখ ফিল্টার" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">সব তারিখ</SelectItem>
-                <SelectItem value="today">আজ</SelectItem>
-                <SelectItem value="week">এই সপ্তাহ</SelectItem>
-                <SelectItem value="month">এই মাস</SelectItem>
+                <SelectItem value="all" className="text-sm md:text-base">সব তারিখ</SelectItem>
+                <SelectItem value="today" className="text-sm md:text-base">আজ</SelectItem>
+                <SelectItem value="week" className="text-sm md:text-base">এই সপ্তাহ</SelectItem>
+                <SelectItem value="month" className="text-sm md:text-base">এই মাস</SelectItem>
               </SelectContent>
             </Select>
 
             <Select value={categoryFilter} onValueChange={setCategoryFilter}>
-              <SelectTrigger className="flex-1">
+              <SelectTrigger className="flex-1 h-10 md:h-12 text-sm md:text-base">
                 <SelectValue placeholder="ক্যাটাগরি ফিল্টার" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">সব ক্যাটাগরি</SelectItem>
+                <SelectItem value="all" className="text-sm md:text-base">সব ক্যাটাগরি</SelectItem>
                 {categories.map((cat) => (
-                  <SelectItem key={cat.id} value={cat.id}>
+                  <SelectItem key={cat.id} value={cat.id} className="text-sm md:text-base">
                     {cat.name_bn}
                   </SelectItem>
                 ))}
@@ -227,13 +227,13 @@ const Transactions = () => {
         </div>
 
         <Tabs defaultValue="expenses" className="w-full">
-          <TabsList className="w-full">
-            <TabsTrigger value="expenses" className="flex-1">
-              <TrendingDown className="h-4 w-4 mr-2" />
+          <TabsList className="w-full h-10 md:h-12">
+            <TabsTrigger value="expenses" className="flex-1 text-sm md:text-base">
+              <TrendingDown className="h-4 w-4 md:h-5 md:w-5 mr-2" />
               খরচ ({filteredExpenses.length})
             </TabsTrigger>
-            <TabsTrigger value="funds" className="flex-1">
-              <TrendingUp className="h-4 w-4 mr-2" />
+            <TabsTrigger value="funds" className="flex-1 text-sm md:text-base">
+              <TrendingUp className="h-4 w-4 md:h-5 md:w-5 mr-2" />
               জমা ({filteredFunds.length})
             </TabsTrigger>
           </TabsList>

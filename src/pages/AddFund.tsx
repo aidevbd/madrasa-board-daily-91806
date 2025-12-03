@@ -89,35 +89,36 @@ const AddFund = () => {
   };
 
   return (
-    <div className="min-h-screen bg-muted/30 pb-24">
-      <div className="bg-primary text-primary-foreground p-4 sticky top-0 z-10 shadow-md">
-        <div className="flex items-center gap-3">
+    <div className="min-h-screen bg-muted/30 pb-24 md:pb-28 lg:pb-32">
+      <div className="bg-primary text-primary-foreground p-4 md:p-6 sticky top-0 z-10 shadow-md">
+        <div className="flex items-center gap-3 md:gap-4 max-w-2xl mx-auto">
           <Button
             variant="ghost"
             size="icon"
             onClick={() => navigate("/")}
             className="text-primary-foreground hover:bg-primary-foreground/10"
           >
-            <ArrowLeft className="h-5 w-5" />
+            <ArrowLeft className="h-5 w-5 md:h-6 md:w-6" />
           </Button>
-          <h1 className="text-xl font-bold">জমা যোগ করুন</h1>
+          <h1 className="text-xl md:text-2xl lg:text-3xl font-bold">জমা যোগ করুন</h1>
         </div>
       </div>
 
-      <div className="p-4 space-y-4">
-        <Card className="p-4 space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="date">তারিখ</Label>
+      <div className="p-4 md:p-6 lg:p-8 space-y-4 md:space-y-6 max-w-2xl mx-auto">
+        <Card className="p-4 md:p-6 space-y-4 md:space-y-5">
+          <div className="space-y-2 md:space-y-3">
+            <Label htmlFor="date" className="text-sm md:text-base">তারিখ</Label>
             <Input
               id="date"
               type="date"
               value={formData.fund_date}
               onChange={(e) => setFormData({ ...formData, fund_date: e.target.value })}
+              className="h-10 md:h-12 text-sm md:text-base"
             />
           </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="amount">পরিমাণ *</Label>
+          <div className="space-y-2 md:space-y-3">
+            <Label htmlFor="amount" className="text-sm md:text-base">পরিমাণ *</Label>
             <Input
               id="amount"
               type="number"
@@ -126,28 +127,30 @@ const AddFund = () => {
               placeholder="০.০০"
               value={formData.amount}
               onChange={(e) => setFormData({ ...formData, amount: e.target.value })}
+              className="h-10 md:h-12 text-sm md:text-base"
             />
           </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="source">উৎস / নোট</Label>
+          <div className="space-y-2 md:space-y-3">
+            <Label htmlFor="source" className="text-sm md:text-base">উৎস / নোট</Label>
             <Input
               id="source"
               placeholder="যেমন: চাঁদা, দান"
               value={formData.source_note_bn}
               onChange={(e) => setFormData({ ...formData, source_note_bn: e.target.value })}
+              className="h-10 md:h-12 text-sm md:text-base"
             />
           </div>
         </Card>
 
-        <div className="flex gap-3">
+        <div className="flex gap-3 md:gap-4">
           <Button
             onClick={() => handleSubmit(false)}
             disabled={loading}
-            className="flex-1"
+            className="flex-1 h-12 md:h-14 text-sm md:text-base"
             size="lg"
           >
-            <Save className="mr-2 h-4 w-4" />
+            <Save className="mr-2 h-4 w-4 md:h-5 md:w-5" />
             সেভ করুন
           </Button>
 
@@ -155,7 +158,7 @@ const AddFund = () => {
             onClick={() => handleSubmit(true)}
             disabled={loading}
             variant="secondary"
-            className="flex-1"
+            className="flex-1 h-12 md:h-14 text-sm md:text-base"
             size="lg"
           >
             সেভ ও নতুন
