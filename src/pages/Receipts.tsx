@@ -88,61 +88,61 @@ const Receipts = () => {
   };
 
   return (
-    <div className="min-h-screen bg-muted/30 pb-24">
-      <div className="bg-primary text-primary-foreground p-4 shadow-md">
-        <div className="flex items-center gap-3">
+    <div className="min-h-screen bg-muted/30 pb-24 md:pb-28 lg:pb-32">
+      <div className="bg-primary text-primary-foreground p-4 md:p-6 shadow-md">
+        <div className="flex items-center gap-3 md:gap-4 max-w-4xl mx-auto">
           <Button
             variant="ghost"
             size="icon"
             onClick={() => navigate(-1)}
             className="text-primary-foreground hover:bg-primary-foreground/20"
           >
-            <ArrowLeft className="h-5 w-5" />
+            <ArrowLeft className="h-5 w-5 md:h-6 md:w-6" />
           </Button>
-          <h1 className="text-xl font-bold">রশিদ গ্যালারি</h1>
+          <h1 className="text-xl md:text-2xl lg:text-3xl font-bold">রশিদ গ্যালারি</h1>
         </div>
       </div>
 
-      <div className="p-4 space-y-4">
+      <div className="p-4 md:p-6 lg:p-8 space-y-4 md:space-y-6 max-w-4xl mx-auto">
         {/* Search Bar */}
-        <Card className="p-4">
+        <Card className="p-4 md:p-6">
           <div className="relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4 md:h-5 md:w-5" />
             <Input
               type="text"
               placeholder="রশিদ খুঁজুন..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-10"
+              className="pl-10 md:pl-12 h-10 md:h-12 text-sm md:text-base"
             />
           </div>
         </Card>
 
         {/* Stats Card */}
-        <Card className="p-4">
+        <Card className="p-4 md:p-6">
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <ImageIcon className="h-5 w-5 text-primary" />
-              <span className="font-semibold">মোট রশিদ:</span>
+            <div className="flex items-center gap-2 md:gap-3">
+              <ImageIcon className="h-5 w-5 md:h-6 md:w-6 text-primary" />
+              <span className="font-semibold text-sm md:text-base lg:text-lg">মোট রশিদ:</span>
             </div>
-            <span className="text-2xl font-bold text-primary">{filteredReceipts.length}</span>
+            <span className="text-2xl md:text-3xl lg:text-4xl font-bold text-primary">{filteredReceipts.length}</span>
           </div>
         </Card>
 
         {/* Gallery Grid */}
         {loading ? (
           <div className="text-center py-8">
-            <p className="text-muted-foreground">লোড হচ্ছে...</p>
+            <p className="text-muted-foreground text-sm md:text-base">লোড হচ্ছে...</p>
           </div>
         ) : filteredReceipts.length === 0 ? (
-          <Card className="p-8 text-center">
-            <ImageIcon className="h-16 w-16 mx-auto text-muted-foreground mb-4" />
-            <p className="text-muted-foreground">
+          <Card className="p-8 md:p-12 text-center">
+            <ImageIcon className="h-16 w-16 md:h-20 md:w-20 mx-auto text-muted-foreground mb-4" />
+            <p className="text-muted-foreground text-sm md:text-base lg:text-lg">
               {searchQuery ? "কোনো রশিদ পাওয়া যায়নি" : "এখনো কোনো রশিদ যোগ করা হয়নি"}
             </p>
           </Card>
         ) : (
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
             {filteredReceipts.map((receipt) => (
               <Card
                 key={receipt.id}
@@ -158,24 +158,23 @@ const Receipts = () => {
                     alt={receipt.item_name_bn}
                     className="w-full h-full object-cover"
                     onError={async (e) => {
-                      // Try to get signed URL on error
                       const signedUrl = await getSignedUrl(receipt.receipt_image_url);
                       (e.target as HTMLImageElement).src = signedUrl;
                     }}
                   />
                 </div>
-                <div className="p-3 space-y-1">
-                  <p className="font-semibold text-sm line-clamp-1">{receipt.item_name_bn}</p>
-                  <div className="flex items-center gap-1 text-xs text-muted-foreground">
-                    <Calendar className="h-3 w-3" />
+                <div className="p-3 md:p-4 space-y-1 md:space-y-2">
+                  <p className="font-semibold text-sm md:text-base line-clamp-1">{receipt.item_name_bn}</p>
+                  <div className="flex items-center gap-1 text-xs md:text-sm text-muted-foreground">
+                    <Calendar className="h-3 w-3 md:h-4 md:w-4" />
                     <span>{receipt.expense_date}</span>
                   </div>
-                  <div className="flex items-center gap-1 text-xs font-semibold text-primary">
-                    <DollarSign className="h-3 w-3" />
+                  <div className="flex items-center gap-1 text-xs md:text-sm font-semibold text-primary">
+                    <DollarSign className="h-3 w-3 md:h-4 md:w-4" />
                     <span>৳ {Number(receipt.total_price).toFixed(2)}</span>
                   </div>
                   {receipt.expense_categories && (
-                    <p className="text-xs text-muted-foreground">
+                    <p className="text-xs md:text-sm text-muted-foreground">
                       {receipt.expense_categories.name_bn}
                     </p>
                   )}

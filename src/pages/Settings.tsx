@@ -267,102 +267,105 @@ const Settings = () => {
   };
 
   return (
-    <div className="min-h-screen bg-muted/30 pb-24">
-      <div className="bg-primary text-primary-foreground p-4 shadow-md">
-        <h1 className="text-xl font-bold">সেটিংস</h1>
+    <div className="min-h-screen bg-muted/30 pb-24 md:pb-28 lg:pb-32">
+      <div className="bg-primary text-primary-foreground p-4 md:p-6 shadow-md">
+        <h1 className="text-xl md:text-2xl lg:text-3xl font-bold max-w-4xl mx-auto">সেটিংস</h1>
       </div>
 
-      <div className="p-4 space-y-4">
+      <div className="p-4 md:p-6 lg:p-8 space-y-4 md:space-y-6 max-w-4xl mx-auto">
         <Tabs defaultValue="categories" className="w-full">
-          <TabsList className="grid w-full grid-cols-3">
-            <TabsTrigger value="categories">ক্যাটাগরি</TabsTrigger>
-            <TabsTrigger value="units">একক</TabsTrigger>
-            <TabsTrigger value="favorites">প্রিয়</TabsTrigger>
+          <TabsList className="grid w-full grid-cols-3 h-10 md:h-12">
+            <TabsTrigger value="categories" className="text-sm md:text-base">ক্যাটাগরি</TabsTrigger>
+            <TabsTrigger value="units" className="text-sm md:text-base">একক</TabsTrigger>
+            <TabsTrigger value="favorites" className="text-sm md:text-base">প্রিয়</TabsTrigger>
           </TabsList>
 
-          <TabsContent value="categories" className="space-y-4">
-            <Card className="p-4 space-y-3">
-              <Label>নতুন ক্যাটাগরি যোগ করুন</Label>
-              <div className="flex gap-2">
+          <TabsContent value="categories" className="space-y-4 md:space-y-5">
+            <Card className="p-4 md:p-6 space-y-3 md:space-y-4">
+              <Label className="text-sm md:text-base">নতুন ক্যাটাগরি যোগ করুন</Label>
+              <div className="flex gap-2 md:gap-3">
                 <Input
                   placeholder="ক্যাটাগরির নাম"
                   value={newCategory}
                   onChange={(e) => setNewCategory(e.target.value)}
+                  className="h-10 md:h-12 text-sm md:text-base"
                 />
-                <Button onClick={addCategory}>
-                  <Plus className="h-4 w-4" />
+                <Button onClick={addCategory} className="h-10 md:h-12 w-10 md:w-12">
+                  <Plus className="h-4 w-4 md:h-5 md:w-5" />
                 </Button>
               </div>
             </Card>
 
-            <Card className="p-4 space-y-2">
+            <Card className="p-4 md:p-6 space-y-2 md:space-y-3">
               {categories.map((cat) => (
-                <div key={cat.id} className="flex justify-between items-center py-2 border-b last:border-0">
-                  <span>{cat.name_bn}</span>
+                <div key={cat.id} className="flex justify-between items-center py-2 md:py-3 border-b last:border-0">
+                  <span className="text-sm md:text-base lg:text-lg">{cat.name_bn}</span>
                   <Button
                     variant="ghost"
                     size="icon"
                     onClick={() => deleteCategory(cat.id)}
                   >
-                    <Trash2 className="h-4 w-4 text-destructive" />
+                    <Trash2 className="h-4 w-4 md:h-5 md:w-5 text-destructive" />
                   </Button>
                 </div>
               ))}
             </Card>
           </TabsContent>
 
-          <TabsContent value="units" className="space-y-4">
-            <Card className="p-4 space-y-3">
-              <Label>নতুন একক যোগ করুন</Label>
-              <div className="flex gap-2">
+          <TabsContent value="units" className="space-y-4 md:space-y-5">
+            <Card className="p-4 md:p-6 space-y-3 md:space-y-4">
+              <Label className="text-sm md:text-base">নতুন একক যোগ করুন</Label>
+              <div className="flex gap-2 md:gap-3">
                 <Input
                   placeholder="একক নাম (যেমন: কেজি, লিটার)"
                   value={newUnit}
                   onChange={(e) => setNewUnit(e.target.value)}
+                  className="h-10 md:h-12 text-sm md:text-base"
                 />
-                <Button onClick={addUnit}>
-                  <Plus className="h-4 w-4" />
+                <Button onClick={addUnit} className="h-10 md:h-12 w-10 md:w-12">
+                  <Plus className="h-4 w-4 md:h-5 md:w-5" />
                 </Button>
               </div>
             </Card>
 
-            <Card className="p-4 space-y-2">
+            <Card className="p-4 md:p-6 space-y-2 md:space-y-3">
               {units.map((unit) => (
-                <div key={unit.id} className="flex justify-between items-center py-2 border-b last:border-0">
-                  <span>{unit.name_bn}</span>
+                <div key={unit.id} className="flex justify-between items-center py-2 md:py-3 border-b last:border-0">
+                  <span className="text-sm md:text-base lg:text-lg">{unit.name_bn}</span>
                   <Button
                     variant="ghost"
                     size="icon"
                     onClick={() => deleteUnit(unit.id)}
                   >
-                    <Trash2 className="h-4 w-4 text-destructive" />
+                    <Trash2 className="h-4 w-4 md:h-5 md:w-5 text-destructive" />
                   </Button>
                 </div>
               ))}
             </Card>
           </TabsContent>
 
-          <TabsContent value="favorites" className="space-y-4">
-            <Card className="p-4 space-y-3">
-              <Label>নতুন প্রিয় আইটেম যোগ করুন</Label>
+          <TabsContent value="favorites" className="space-y-4 md:space-y-5">
+            <Card className="p-4 md:p-6 space-y-3 md:space-y-4">
+              <Label className="text-sm md:text-base">নতুন প্রিয় আইটেম যোগ করুন</Label>
               <Input
                 placeholder="আইটেমের নাম"
                 value={newFavorite.name}
                 onChange={(e) => setNewFavorite({ ...newFavorite, name: e.target.value })}
+                className="h-10 md:h-12 text-sm md:text-base"
               />
-              <Button onClick={addFavorite} className="w-full">
-                <Plus className="mr-2 h-4 w-4" />
+              <Button onClick={addFavorite} className="w-full h-10 md:h-12 text-sm md:text-base">
+                <Plus className="mr-2 h-4 w-4 md:h-5 md:w-5" />
                 যোগ করুন
               </Button>
             </Card>
 
-            <Card className="p-4 space-y-2">
+            <Card className="p-4 md:p-6 space-y-2 md:space-y-3">
               {favorites.map((fav) => (
-                <div key={fav.id} className="flex justify-between items-center py-2 border-b last:border-0">
+                <div key={fav.id} className="flex justify-between items-center py-2 md:py-3 border-b last:border-0">
                   <div>
-                    <p className="font-medium">{fav.item_name_bn}</p>
+                    <p className="font-medium text-sm md:text-base lg:text-lg">{fav.item_name_bn}</p>
                     {fav.expense_categories && (
-                      <p className="text-xs text-muted-foreground">{fav.expense_categories.name_bn}</p>
+                      <p className="text-xs md:text-sm text-muted-foreground">{fav.expense_categories.name_bn}</p>
                     )}
                   </div>
                   <Button
@@ -370,7 +373,7 @@ const Settings = () => {
                     size="icon"
                     onClick={() => deleteFavorite(fav.id)}
                   >
-                    <Trash2 className="h-4 w-4 text-destructive" />
+                    <Trash2 className="h-4 w-4 md:h-5 md:w-5 text-destructive" />
                   </Button>
                 </div>
               ))}
@@ -378,41 +381,41 @@ const Settings = () => {
           </TabsContent>
         </Tabs>
 
-        <Card className="p-4 space-y-4">
+        <Card className="p-4 md:p-6 space-y-4">
           <div className="flex items-center justify-between">
             <div>
-              <h3 className="font-semibold">বাজেট</h3>
-              <p className="text-sm text-muted-foreground">মাসিক বাজেট ম্যানেজ করুন</p>
+              <h3 className="font-semibold text-sm md:text-base lg:text-lg">বাজেট</h3>
+              <p className="text-xs md:text-sm text-muted-foreground">মাসিক বাজেট ম্যানেজ করুন</p>
             </div>
-            <Button variant="outline" size="icon" onClick={() => navigate("/budget")}>
-              <DollarSign className="h-4 w-4" />
+            <Button variant="outline" size="icon" onClick={() => navigate("/budget")} className="h-10 w-10 md:h-12 md:w-12">
+              <DollarSign className="h-4 w-4 md:h-5 md:w-5" />
             </Button>
           </div>
         </Card>
 
-        <Card className="p-4 space-y-4">
+        <Card className="p-4 md:p-6 space-y-4">
           <div className="flex items-center justify-between">
             <div>
-              <h3 className="font-semibold">ডার্ক মোড</h3>
-              <p className="text-sm text-muted-foreground">থিম পরিবর্তন করুন</p>
+              <h3 className="font-semibold text-sm md:text-base lg:text-lg">ডার্ক মোড</h3>
+              <p className="text-xs md:text-sm text-muted-foreground">থিম পরিবর্তন করুন</p>
             </div>
-            <Button variant="outline" size="icon" onClick={toggleTheme}>
-              {theme === "dark" ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+            <Button variant="outline" size="icon" onClick={toggleTheme} className="h-10 w-10 md:h-12 md:w-12">
+              {theme === "dark" ? <Sun className="h-4 w-4 md:h-5 md:w-5" /> : <Moon className="h-4 w-4 md:h-5 md:w-5" />}
             </Button>
           </div>
         </Card>
 
-        <Button variant="outline" className="w-full" onClick={handleBackupDownload}>
-          <Download className="mr-2 h-4 w-4" />
+        <Button variant="outline" className="w-full h-12 md:h-14 text-sm md:text-base" onClick={handleBackupDownload}>
+          <Download className="mr-2 h-4 w-4 md:h-5 md:w-5" />
           ডেটা ব্যাকআপ ডাউনলোড করুন
         </Button>
 
         <Button
           variant="destructive"
-          className="w-full"
+          className="w-full h-12 md:h-14 text-sm md:text-base"
           onClick={handleLogout}
         >
-          <LogOut className="mr-2 h-4 w-4" />
+          <LogOut className="mr-2 h-4 w-4 md:h-5 md:w-5" />
           লগ আউট
         </Button>
       </div>

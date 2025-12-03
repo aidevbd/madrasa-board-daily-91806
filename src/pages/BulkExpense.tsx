@@ -282,23 +282,23 @@ export default function BulkExpense() {
   const { totalItems, totalAmount } = calculateTotals();
 
   return (
-    <div className="min-h-screen bg-background pb-20">
-      <div className="bg-primary text-primary-foreground p-4 flex items-center gap-4">
+    <div className="min-h-screen bg-background pb-20 md:pb-24 lg:pb-28">
+      <div className="bg-primary text-primary-foreground p-4 md:p-6 flex items-center gap-4">
         <Button variant="ghost" size="icon" onClick={() => navigate(-1)}>
-          <ArrowLeft className="h-5 w-5" />
+          <ArrowLeft className="h-5 w-5 md:h-6 md:w-6" />
         </Button>
-        <h1 className="text-xl font-bold">বাজারের তালিকা</h1>
+        <h1 className="text-xl md:text-2xl lg:text-3xl font-bold">বাজারের তালিকা</h1>
       </div>
 
-      <div className="container mx-auto p-4 space-y-4">
-        <Card className="p-4 space-y-4">
-          <div className="space-y-2">
-            <Label>তারিখ</Label>
+      <div className="container mx-auto p-4 md:p-6 lg:p-8 space-y-4 md:space-y-6 max-w-4xl">
+        <Card className="p-4 md:p-6 space-y-4 md:space-y-5">
+          <div className="space-y-2 md:space-y-3">
+            <Label className="text-sm md:text-base">তারিখ</Label>
             <Input
               type="date"
               value={expenseDate}
               onChange={(e) => setExpenseDate(e.target.value)}
-              className="w-full"
+              className="w-full h-10 md:h-12 text-sm md:text-base"
             />
           </div>
 

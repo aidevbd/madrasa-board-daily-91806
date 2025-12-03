@@ -327,91 +327,93 @@ const Reports = () => {
     : [];
 
   return (
-    <div className="min-h-screen bg-muted/30 pb-24">
-      <div className="bg-primary text-primary-foreground p-4 shadow-md">
-        <h1 className="text-xl font-bold">রিপোর্ট</h1>
+    <div className="min-h-screen bg-muted/30 pb-24 md:pb-28 lg:pb-32">
+      <div className="bg-primary text-primary-foreground p-4 md:p-6 shadow-md">
+        <h1 className="text-xl md:text-2xl lg:text-3xl font-bold max-w-4xl mx-auto">রিপোর্ট</h1>
       </div>
 
-      <div className="p-4 space-y-4">
-        <Card className="p-4">
+      <div className="p-4 md:p-6 lg:p-8 space-y-4 md:space-y-6 max-w-4xl mx-auto">
+        <Card className="p-4 md:p-6">
           <div className="flex items-center justify-between">
             <div>
-              <h3 className="font-semibold">রশিদ গ্যালারি</h3>
-              <p className="text-sm text-muted-foreground">সব রশিদ দেখুন এবং খুঁজুন</p>
+              <h3 className="font-semibold text-sm md:text-base lg:text-lg">রশিদ গ্যালারি</h3>
+              <p className="text-xs md:text-sm text-muted-foreground">সব রশিদ দেখুন এবং খুঁজুন</p>
             </div>
-            <Button variant="outline" size="icon" onClick={() => navigate("/receipts")}>
-              <Image className="h-4 w-4" />
+            <Button variant="outline" size="icon" onClick={() => navigate("/receipts")} className="h-10 w-10 md:h-12 md:w-12">
+              <Image className="h-4 w-4 md:h-5 md:w-5" />
             </Button>
           </div>
         </Card>
 
         <Tabs defaultValue="daily" className="w-full">
-          <TabsList className="grid w-full grid-cols-3">
-            <TabsTrigger value="daily">দৈনিক</TabsTrigger>
-            <TabsTrigger value="monthly">মাসিক</TabsTrigger>
-            <TabsTrigger value="custom">কাস্টম</TabsTrigger>
+          <TabsList className="grid w-full grid-cols-3 h-10 md:h-12">
+            <TabsTrigger value="daily" className="text-sm md:text-base">দৈনিক</TabsTrigger>
+            <TabsTrigger value="monthly" className="text-sm md:text-base">মাসিক</TabsTrigger>
+            <TabsTrigger value="custom" className="text-sm md:text-base">কাস্টম</TabsTrigger>
           </TabsList>
 
           <TabsContent value="daily" className="space-y-4">
-            <Button onClick={() => generateReport("daily")} disabled={loading} className="w-full">
+            <Button onClick={() => generateReport("daily")} disabled={loading} className="w-full h-12 md:h-14 text-sm md:text-base">
               আজকের রিপোর্ট দেখুন
             </Button>
           </TabsContent>
 
           <TabsContent value="monthly" className="space-y-4">
-            <Button onClick={() => generateReport("monthly")} disabled={loading} className="w-full">
+            <Button onClick={() => generateReport("monthly")} disabled={loading} className="w-full h-12 md:h-14 text-sm md:text-base">
               এই মাসের রিপোর্ট দেখুন
             </Button>
           </TabsContent>
 
           <TabsContent value="custom" className="space-y-4">
-            <div className="grid grid-cols-2 gap-3">
-              <div className="space-y-2">
-                <Label>শুরুর তারিখ</Label>
+            <div className="grid grid-cols-2 gap-3 md:gap-4">
+              <div className="space-y-2 md:space-y-3">
+                <Label className="text-sm md:text-base">শুরুর তারিখ</Label>
                 <Input
                   type="date"
                   value={dateRange.start}
                   onChange={(e) => setDateRange({ ...dateRange, start: e.target.value })}
+                  className="h-10 md:h-12 text-sm md:text-base"
                 />
               </div>
-              <div className="space-y-2">
-                <Label>শেষ তারিখ</Label>
+              <div className="space-y-2 md:space-y-3">
+                <Label className="text-sm md:text-base">শেষ তারিখ</Label>
                 <Input
                   type="date"
                   value={dateRange.end}
                   onChange={(e) => setDateRange({ ...dateRange, end: e.target.value })}
+                  className="h-10 md:h-12 text-sm md:text-base"
                 />
               </div>
             </div>
-            <Button onClick={() => generateReport("custom")} disabled={loading} className="w-full">
+            <Button onClick={() => generateReport("custom")} disabled={loading} className="w-full h-12 md:h-14 text-sm md:text-base">
               রিপোর্ট তৈরি করুন
             </Button>
           </TabsContent>
         </Tabs>
 
         {reportData && (
-          <div className="space-y-4">
-            <Card className="p-4 space-y-3">
-              <h3 className="font-semibold text-lg">সারসংক্ষেপ</h3>
-              <div className="grid grid-cols-3 gap-3 text-center">
-                <div className="bg-green-50 dark:bg-green-950/20 p-3 rounded-xl">
-                  <p className="text-xs text-muted-foreground">মোট জমা</p>
-                  <p className="text-lg font-bold text-green-600">৳ {reportData.totalFunds.toFixed(2)}</p>
+          <div className="space-y-4 md:space-y-6">
+            <Card className="p-4 md:p-6 space-y-3 md:space-y-4">
+              <h3 className="font-semibold text-lg md:text-xl">সারসংক্ষেপ</h3>
+              <div className="grid grid-cols-3 gap-3 md:gap-4 text-center">
+                <div className="bg-green-50 dark:bg-green-950/20 p-3 md:p-4 rounded-xl">
+                  <p className="text-xs md:text-sm text-muted-foreground">মোট জমা</p>
+                  <p className="text-lg md:text-xl lg:text-2xl font-bold text-green-600">৳ {reportData.totalFunds.toFixed(2)}</p>
                 </div>
-                <div className="bg-red-50 dark:bg-red-950/20 p-3 rounded-xl">
-                  <p className="text-xs text-muted-foreground">মোট খরচ</p>
-                  <p className="text-lg font-bold text-red-600">৳ {reportData.totalExpenses.toFixed(2)}</p>
+                <div className="bg-red-50 dark:bg-red-950/20 p-3 md:p-4 rounded-xl">
+                  <p className="text-xs md:text-sm text-muted-foreground">মোট খরচ</p>
+                  <p className="text-lg md:text-xl lg:text-2xl font-bold text-red-600">৳ {reportData.totalExpenses.toFixed(2)}</p>
                 </div>
-                <div className="bg-primary/10 p-3 rounded-xl">
-                  <p className="text-xs text-muted-foreground">ব্যালেন্স</p>
-                  <p className="text-lg font-bold text-primary">৳ {reportData.balance.toFixed(2)}</p>
+                <div className="bg-primary/10 p-3 md:p-4 rounded-xl">
+                  <p className="text-xs md:text-sm text-muted-foreground">ব্যালেন্স</p>
+                  <p className="text-lg md:text-xl lg:text-2xl font-bold text-primary">৳ {reportData.balance.toFixed(2)}</p>
                 </div>
               </div>
             </Card>
 
             {/* Bar Chart */}
-            <Card className="p-4 space-y-3">
-              <h3 className="font-semibold">আর্থিক সারসংক্ষেপ</h3>
+            <Card className="p-4 md:p-6 space-y-3 md:space-y-4">
+              <h3 className="font-semibold text-base md:text-lg">আর্থিক সারসংক্ষেপ</h3>
               <ResponsiveContainer width="100%" height={200}>
                 <BarChart data={barChartData}>
                   <CartesianGrid strokeDasharray="3 3" />
