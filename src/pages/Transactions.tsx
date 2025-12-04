@@ -12,10 +12,13 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { format } from "date-fns";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { useEditMode } from "@/hooks/useEditMode";
+import EditItemDialog from "@/components/EditItemDialog";
 
 const Transactions = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { isEditMode } = useEditMode();
   const [loading, setLoading] = useState(true);
   const [expenses, setExpenses] = useState<any[]>([]);
   const [funds, setFunds] = useState<any[]>([]);
@@ -23,7 +26,10 @@ const Transactions = () => {
   const [dateFilter, setDateFilter] = useState("all");
   const [categoryFilter, setCategoryFilter] = useState("all");
   const [categories, setCategories] = useState<any[]>([]);
+  const [units, setUnits] = useState<any[]>([]);
   const [expandedBatches, setExpandedBatches] = useState<Set<string>>(new Set());
+  const [editExpense, setEditExpense] = useState<any | null>(null);
+  const [editFund, setEditFund] = useState<any | null>(null);
   const [deleteDialog, setDeleteDialog] = useState<{ open: boolean; type: 'expense' | 'fund' | 'batch' | null; id: string | null; batchId?: string | null }>({
     open: false,
     type: null,
@@ -40,7 +46,7 @@ const Transactions = () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
 
-      const [expensesRes, fundsRes, categoriesRes] = await Promise.all([
+      const [expensesRes, fundsRes, categoriesRes, unitsRes] = await Promise.all([
         supabase
           .from("expenses")
           .select("*, expense_categories(name_bn), units(name_bn)")
@@ -57,12 +63,18 @@ const Transactions = () => {
           .from("expense_categories")
           .select("*")
           .eq("user_id", user.id)
+          .order("name_bn"),
+        supabase
+          .from("units")
+          .select("*")
+          .eq("user_id", user.id)
           .order("name_bn")
       ]);
 
       if (expensesRes.data) setExpenses(expensesRes.data);
       if (fundsRes.data) setFunds(fundsRes.data);
       if (categoriesRes.data) setCategories(categoriesRes.data);
+      if (unitsRes.data) setUnits(unitsRes.data);
     } catch (error) {
       console.error("Error fetching transactions:", error);
       toast({
@@ -350,6 +362,16 @@ const Transactions = () => {
                       <p className="text-sm text-muted-foreground mb-3">{expense.notes}</p>
                     )}
                     <div className="flex gap-2">
+                      {isEditMode && (
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => setEditExpense(expense)}
+                        >
+                          <Pencil className="h-3 w-3 mr-1" />
+                          এডিট
+                        </Button>
+                      )}
                       <Button
                         variant="destructive"
                         size="sm"
@@ -390,6 +412,16 @@ const Transactions = () => {
                     </div>
                   </div>
                   <div className="flex gap-2">
+                    {isEditMode && (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setEditFund(fund)}
+                      >
+                        <Pencil className="h-3 w-3 mr-1" />
+                        এডিট
+                      </Button>
+                    )}
                     <Button
                       variant="destructive"
                       size="sm"
@@ -420,6 +452,67 @@ const Transactions = () => {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* Edit Dialogs */}
+      {editExpense && (
+        <EditItemDialog
+          open={!!editExpense}
+          onOpenChange={(open) => !open && setEditExpense(null)}
+          title="খরচ এডিট করুন"
+          fields={[
+            { name: "item_name_bn", label: "আইটেমের নাম", value: editExpense.item_name_bn, type: "text" },
+            { name: "total_price", label: "মোট মূল্য (৳)", value: editExpense.total_price, type: "number" },
+            { name: "expense_date", label: "তারিখ", value: editExpense.expense_date, type: "date" },
+            { 
+              name: "category_id", 
+              label: "ক্যাটাগরি", 
+              value: editExpense.category_id || "", 
+              type: "select",
+              options: categories.map(c => ({ value: c.id, label: c.name_bn }))
+            },
+          ]}
+          onSave={async (values) => {
+            const { error } = await supabase
+              .from("expenses")
+              .update({
+                item_name_bn: String(values.item_name_bn),
+                total_price: Number(values.total_price),
+                expense_date: String(values.expense_date),
+                category_id: values.category_id ? String(values.category_id) : null,
+              })
+              .eq("id", editExpense.id);
+            if (error) throw error;
+            toast({ title: "সফল", description: "খরচ আপডেট হয়েছে" });
+            fetchTransactions();
+          }}
+        />
+      )}
+
+      {editFund && (
+        <EditItemDialog
+          open={!!editFund}
+          onOpenChange={(open) => !open && setEditFund(null)}
+          title="জমা এডিট করুন"
+          fields={[
+            { name: "source_note_bn", label: "উৎস/নোট", value: editFund.source_note_bn || "", type: "text" },
+            { name: "amount", label: "পরিমাণ (৳)", value: editFund.amount, type: "number" },
+            { name: "fund_date", label: "তারিখ", value: editFund.fund_date, type: "date" },
+          ]}
+          onSave={async (values) => {
+            const { error } = await supabase
+              .from("funds")
+              .update({
+                source_note_bn: values.source_note_bn ? String(values.source_note_bn) : null,
+                amount: Number(values.amount),
+                fund_date: String(values.fund_date),
+              })
+              .eq("id", editFund.id);
+            if (error) throw error;
+            toast({ title: "সফল", description: "জমা আপডেট হয়েছে" });
+            fetchTransactions();
+          }}
+        />
+      )}
 
       <Navigation />
     </div>

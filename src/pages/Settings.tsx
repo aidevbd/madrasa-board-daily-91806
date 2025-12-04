@@ -6,11 +6,14 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Plus, Trash2, LogOut, Moon, Sun, Download, DollarSign } from "lucide-react";
+import { Plus, Trash2, LogOut, Moon, Sun, Download, DollarSign, Pencil, Settings2 } from "lucide-react";
 import Navigation from "@/components/Navigation";
 import { useToast } from "@/hooks/use-toast";
 import { z } from "zod";
 import { useTheme } from "@/hooks/useTheme";
+import { useEditMode } from "@/hooks/useEditMode";
+import EditItemDialog from "@/components/EditItemDialog";
+import { Switch } from "@/components/ui/switch";
 
 // Validation schemas
 const nameSchema = z.object({
@@ -24,12 +27,18 @@ const Settings = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const { theme, toggleTheme } = useTheme();
+  const { isEditMode, toggleEditMode } = useEditMode();
   const [categories, setCategories] = useState<any[]>([]);
   const [units, setUnits] = useState<any[]>([]);
   const [favorites, setFavorites] = useState<any[]>([]);
   const [newCategory, setNewCategory] = useState("");
   const [newUnit, setNewUnit] = useState("");
   const [newFavorite, setNewFavorite] = useState({ name: "", categoryId: "" });
+  
+  // Edit dialog states
+  const [editCategory, setEditCategory] = useState<any | null>(null);
+  const [editUnit, setEditUnit] = useState<any | null>(null);
+  const [editFavorite, setEditFavorite] = useState<any | null>(null);
 
   useEffect(() => {
     fetchData();
@@ -300,13 +309,24 @@ const Settings = () => {
               {categories.map((cat) => (
                 <div key={cat.id} className="flex justify-between items-center py-2 md:py-3 border-b last:border-0">
                   <span className="text-sm md:text-base lg:text-lg">{cat.name_bn}</span>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => deleteCategory(cat.id)}
-                  >
-                    <Trash2 className="h-4 w-4 md:h-5 md:w-5 text-destructive" />
-                  </Button>
+                  <div className="flex gap-1">
+                    {isEditMode && (
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => setEditCategory(cat)}
+                      >
+                        <Pencil className="h-4 w-4 md:h-5 md:w-5 text-primary" />
+                      </Button>
+                    )}
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => deleteCategory(cat.id)}
+                    >
+                      <Trash2 className="h-4 w-4 md:h-5 md:w-5 text-destructive" />
+                    </Button>
+                  </div>
                 </div>
               ))}
             </Card>
@@ -332,13 +352,24 @@ const Settings = () => {
               {units.map((unit) => (
                 <div key={unit.id} className="flex justify-between items-center py-2 md:py-3 border-b last:border-0">
                   <span className="text-sm md:text-base lg:text-lg">{unit.name_bn}</span>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => deleteUnit(unit.id)}
-                  >
-                    <Trash2 className="h-4 w-4 md:h-5 md:w-5 text-destructive" />
-                  </Button>
+                  <div className="flex gap-1">
+                    {isEditMode && (
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => setEditUnit(unit)}
+                      >
+                        <Pencil className="h-4 w-4 md:h-5 md:w-5 text-primary" />
+                      </Button>
+                    )}
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => deleteUnit(unit.id)}
+                    >
+                      <Trash2 className="h-4 w-4 md:h-5 md:w-5 text-destructive" />
+                    </Button>
+                  </div>
                 </div>
               ))}
             </Card>
@@ -368,18 +399,45 @@ const Settings = () => {
                       <p className="text-xs md:text-sm text-muted-foreground">{fav.expense_categories.name_bn}</p>
                     )}
                   </div>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => deleteFavorite(fav.id)}
-                  >
-                    <Trash2 className="h-4 w-4 md:h-5 md:w-5 text-destructive" />
-                  </Button>
+                  <div className="flex gap-1">
+                    {isEditMode && (
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => setEditFavorite(fav)}
+                      >
+                        <Pencil className="h-4 w-4 md:h-5 md:w-5 text-primary" />
+                      </Button>
+                    )}
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => deleteFavorite(fav.id)}
+                    >
+                      <Trash2 className="h-4 w-4 md:h-5 md:w-5 text-destructive" />
+                    </Button>
+                  </div>
                 </div>
               ))}
             </Card>
           </TabsContent>
         </Tabs>
+
+        <Card className={`p-4 md:p-6 space-y-4 ${isEditMode ? 'border-2 border-primary ring-2 ring-primary/20' : ''}`}>
+          <div className="flex items-center justify-between">
+            <div>
+              <h3 className="font-semibold text-sm md:text-base lg:text-lg">এডিট মোড</h3>
+              <p className="text-xs md:text-sm text-muted-foreground">
+                {isEditMode ? "এডিট মোড চালু - সব জায়গায় এডিট করুন" : "এডিট করতে চালু করুন"}
+              </p>
+            </div>
+            <Switch
+              checked={isEditMode}
+              onCheckedChange={toggleEditMode}
+              className="scale-110 md:scale-125"
+            />
+          </div>
+        </Card>
 
         <Card className="p-4 md:p-6 space-y-4">
           <div className="flex items-center justify-between">
@@ -419,6 +477,69 @@ const Settings = () => {
           লগ আউট
         </Button>
       </div>
+
+      {/* Edit Dialogs */}
+      {editCategory && (
+        <EditItemDialog
+          open={!!editCategory}
+          onOpenChange={(open) => !open && setEditCategory(null)}
+          title="ক্যাটাগরি এডিট করুন"
+          fields={[
+            { name: "name_bn", label: "ক্যাটাগরির নাম", value: editCategory.name_bn, type: "text" }
+          ]}
+          onSave={async (values) => {
+            const nameBn = String(values.name_bn);
+            const { error } = await supabase
+              .from("expense_categories")
+              .update({ name_bn: nameBn, name: nameBn })
+              .eq("id", editCategory.id);
+            if (error) throw error;
+            toast({ title: "সফল", description: "ক্যাটাগরি আপডেট হয়েছে" });
+            fetchData();
+          }}
+        />
+      )}
+
+      {editUnit && (
+        <EditItemDialog
+          open={!!editUnit}
+          onOpenChange={(open) => !open && setEditUnit(null)}
+          title="একক এডিট করুন"
+          fields={[
+            { name: "name_bn", label: "একক নাম", value: editUnit.name_bn, type: "text" }
+          ]}
+          onSave={async (values) => {
+            const nameBn = String(values.name_bn);
+            const { error } = await supabase
+              .from("units")
+              .update({ name_bn: nameBn, name: nameBn })
+              .eq("id", editUnit.id);
+            if (error) throw error;
+            toast({ title: "সফল", description: "একক আপডেট হয়েছে" });
+            fetchData();
+          }}
+        />
+      )}
+
+      {editFavorite && (
+        <EditItemDialog
+          open={!!editFavorite}
+          onOpenChange={(open) => !open && setEditFavorite(null)}
+          title="প্রিয় আইটেম এডিট করুন"
+          fields={[
+            { name: "item_name_bn", label: "আইটেমের নাম", value: editFavorite.item_name_bn, type: "text" }
+          ]}
+          onSave={async (values) => {
+            const { error } = await supabase
+              .from("favorites")
+              .update({ item_name_bn: String(values.item_name_bn) })
+              .eq("id", editFavorite.id);
+            if (error) throw error;
+            toast({ title: "সফল", description: "প্রিয় আইটেম আপডেট হয়েছে" });
+            fetchData();
+          }}
+        />
+      )}
 
       <Navigation />
     </div>
