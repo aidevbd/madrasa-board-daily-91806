@@ -10,6 +10,7 @@ import { ArrowLeft, Camera, Save } from "lucide-react";
 import Navigation from "@/components/Navigation";
 import { useToast } from "@/hooks/use-toast";
 import { z } from "zod";
+import TagManager from "@/components/TagManager";
 
 // Validation schema
 const expenseSchema = z.object({
@@ -48,6 +49,7 @@ const AddExpense = () => {
   });
   const [uploadingReceipt, setUploadingReceipt] = useState(false);
   const [receiptPreview, setReceiptPreview] = useState<string | null>(null);
+  const [selectedTags, setSelectedTags] = useState<string[]>([]);
 
   useEffect(() => {
     fetchData();
@@ -242,7 +244,7 @@ const AddExpense = () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error("User not found");
 
-      const { error } = await supabase.from("expenses").insert({
+      const { data: expense, error } = await supabase.from("expenses").insert({
         user_id: user.id,
         expense_date: formData.expense_date,
         item_name_bn: formData.item_name_bn.trim(),
@@ -252,9 +254,18 @@ const AddExpense = () => {
         total_price: parseFloat(parseFloat(formData.total_price).toFixed(2)),
         notes: formData.notes?.trim() || null,
         receipt_image_url: formData.receipt_image_url || null,
-      });
+      }).select().single();
 
       if (error) throw error;
+
+      // Save tag relations
+      if (selectedTags.length > 0 && expense) {
+        const tagRelations = selectedTags.map(tagId => ({
+          expense_id: expense.id,
+          tag_id: tagId,
+        }));
+        await supabase.from("expense_tag_relations").insert(tagRelations);
+      }
 
       toast({
         title: "সফল",
@@ -273,6 +284,7 @@ const AddExpense = () => {
           receipt_image_url: "",
         });
         setReceiptPreview(null);
+        setSelectedTags([]);
       } else {
         navigate("/");
       }
@@ -417,6 +429,14 @@ const AddExpense = () => {
               value={formData.notes}
               onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
               className="h-10 md:h-12 text-sm md:text-base"
+            />
+          </div>
+
+          <div className="space-y-2 md:space-y-3">
+            <Label className="text-sm md:text-base">ট্যাগ</Label>
+            <TagManager
+              selectedTags={selectedTags}
+              onTagsChange={setSelectedTags}
             />
           </div>
 

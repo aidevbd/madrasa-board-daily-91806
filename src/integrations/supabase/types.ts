@@ -84,6 +84,69 @@ export type Database = {
           },
         ]
       }
+      expense_tag_relations: {
+        Row: {
+          created_at: string
+          expense_id: string
+          id: string
+          tag_id: string
+        }
+        Insert: {
+          created_at?: string
+          expense_id: string
+          id?: string
+          tag_id: string
+        }
+        Update: {
+          created_at?: string
+          expense_id?: string
+          id?: string
+          tag_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "expense_tag_relations_expense_id_fkey"
+            columns: ["expense_id"]
+            isOneToOne: false
+            referencedRelation: "expenses"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "expense_tag_relations_tag_id_fkey"
+            columns: ["tag_id"]
+            isOneToOne: false
+            referencedRelation: "expense_tags"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      expense_tags: {
+        Row: {
+          color: string | null
+          created_at: string
+          id: string
+          name_bn: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          color?: string | null
+          created_at?: string
+          id?: string
+          name_bn: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          color?: string | null
+          created_at?: string
+          id?: string
+          name_bn?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       expenses: {
         Row: {
           batch_id: string | null
