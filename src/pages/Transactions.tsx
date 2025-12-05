@@ -1,19 +1,21 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { ArrowLeft, Pencil, Trash2, Search, TrendingUp, TrendingDown, ChevronDown, ChevronUp } from "lucide-react";
+import { ArrowLeft, Pencil, Trash2, Search, TrendingUp, TrendingDown, ChevronDown, ChevronUp, Tag } from "lucide-react";
 import Navigation from "@/components/Navigation";
 import { useToast } from "@/hooks/use-toast";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
-import { format } from "date-fns";
+import { format, isWithinInterval, startOfDay, endOfDay } from "date-fns";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useEditMode } from "@/hooks/useEditMode";
 import EditItemDialog from "@/components/EditItemDialog";
+import AdvancedFilters, { FilterState } from "@/components/AdvancedFilters";
+import { Badge } from "@/components/ui/badge";
 
 const Transactions = () => {
   const navigate = useNavigate();
@@ -23,13 +25,21 @@ const Transactions = () => {
   const [expenses, setExpenses] = useState<any[]>([]);
   const [funds, setFunds] = useState<any[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
-  const [dateFilter, setDateFilter] = useState("all");
   const [categoryFilter, setCategoryFilter] = useState("all");
   const [categories, setCategories] = useState<any[]>([]);
   const [units, setUnits] = useState<any[]>([]);
+  const [tags, setTags] = useState<any[]>([]);
+  const [expenseTagRelations, setExpenseTagRelations] = useState<any[]>([]);
   const [expandedBatches, setExpandedBatches] = useState<Set<string>>(new Set());
   const [editExpense, setEditExpense] = useState<any | null>(null);
   const [editFund, setEditFund] = useState<any | null>(null);
+  const [advancedFilters, setAdvancedFilters] = useState<FilterState>({
+    dateFrom: undefined,
+    dateTo: undefined,
+    priceMin: "",
+    priceMax: "",
+    tagIds: [],
+  });
   const [deleteDialog, setDeleteDialog] = useState<{ open: boolean; type: 'expense' | 'fund' | 'batch' | null; id: string | null; batchId?: string | null }>({
     open: false,
     type: null,
@@ -46,7 +56,7 @@ const Transactions = () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
 
-      const [expensesRes, fundsRes, categoriesRes, unitsRes] = await Promise.all([
+      const [expensesRes, fundsRes, categoriesRes, unitsRes, tagsRes, tagRelationsRes] = await Promise.all([
         supabase
           .from("expenses")
           .select("*, expense_categories(name_bn), units(name_bn)")
@@ -68,13 +78,23 @@ const Transactions = () => {
           .from("units")
           .select("*")
           .eq("user_id", user.id)
-          .order("name_bn")
+          .order("name_bn"),
+        supabase
+          .from("expense_tags")
+          .select("*")
+          .eq("user_id", user.id)
+          .order("name_bn"),
+        supabase
+          .from("expense_tag_relations")
+          .select("*")
       ]);
 
       if (expensesRes.data) setExpenses(expensesRes.data);
       if (fundsRes.data) setFunds(fundsRes.data);
       if (categoriesRes.data) setCategories(categoriesRes.data);
       if (unitsRes.data) setUnits(unitsRes.data);
+      if (tagsRes.data) setTags(tagsRes.data);
+      if (tagRelationsRes.data) setExpenseTagRelations(tagRelationsRes.data);
     } catch (error) {
       console.error("Error fetching transactions:", error);
       toast({
@@ -133,14 +153,64 @@ const Transactions = () => {
     }
   };
 
-  const filteredExpenses = expenses.filter(e =>
-    e.item_name_bn.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    e.notes?.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  // Get tags for an expense
+  const getExpenseTags = (expenseId: string) => {
+    const relatedTagIds = expenseTagRelations
+      .filter(rel => rel.expense_id === expenseId)
+      .map(rel => rel.tag_id);
+    return tags.filter(tag => relatedTagIds.includes(tag.id));
+  };
+
+  // Advanced filtering with date range, price range, and tags
+  const filteredExpenses = useMemo(() => {
+    return expenses.filter(e => {
+      // Text search
+      const matchesSearch = 
+        e.item_name_bn.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        e.notes?.toLowerCase().includes(searchQuery.toLowerCase());
+      if (!matchesSearch) return false;
+
+      // Category filter
+      if (categoryFilter !== "all" && e.category_id !== categoryFilter) return false;
+
+      // Date range filter
+      if (advancedFilters.dateFrom || advancedFilters.dateTo) {
+        const expenseDate = new Date(e.expense_date);
+        if (advancedFilters.dateFrom && expenseDate < startOfDay(advancedFilters.dateFrom)) return false;
+        if (advancedFilters.dateTo && expenseDate > endOfDay(advancedFilters.dateTo)) return false;
+      }
+
+      // Price range filter
+      const price = Number(e.total_price);
+      if (advancedFilters.priceMin && price < Number(advancedFilters.priceMin)) return false;
+      if (advancedFilters.priceMax && price > Number(advancedFilters.priceMax)) return false;
+
+      // Tag filter
+      if (advancedFilters.tagIds.length > 0) {
+        const expenseTags = getExpenseTags(e.id);
+        const hasMatchingTag = advancedFilters.tagIds.some(tagId => 
+          expenseTags.some(t => t.id === tagId)
+        );
+        if (!hasMatchingTag) return false;
+      }
+
+      return true;
+    });
+  }, [expenses, searchQuery, categoryFilter, advancedFilters, expenseTagRelations, tags]);
 
   const filteredFunds = funds.filter(f =>
     f.source_note_bn?.toLowerCase().includes(searchQuery.toLowerCase())
   );
+
+  const clearAdvancedFilters = () => {
+    setAdvancedFilters({
+      dateFrom: undefined,
+      dateTo: undefined,
+      priceMin: "",
+      priceMax: "",
+      tagIds: [],
+    });
+  };
 
   // Group expenses by batch_id
   const groupedExpenses = () => {
@@ -210,18 +280,6 @@ const Transactions = () => {
           </div>
 
           <div className="flex gap-2 md:gap-4">
-            <Select value={dateFilter} onValueChange={setDateFilter}>
-              <SelectTrigger className="flex-1 h-10 md:h-12 text-sm md:text-base">
-                <SelectValue placeholder="তারিখ ফিল্টার" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all" className="text-sm md:text-base">সব তারিখ</SelectItem>
-                <SelectItem value="today" className="text-sm md:text-base">আজ</SelectItem>
-                <SelectItem value="week" className="text-sm md:text-base">এই সপ্তাহ</SelectItem>
-                <SelectItem value="month" className="text-sm md:text-base">এই মাস</SelectItem>
-              </SelectContent>
-            </Select>
-
             <Select value={categoryFilter} onValueChange={setCategoryFilter}>
               <SelectTrigger className="flex-1 h-10 md:h-12 text-sm md:text-base">
                 <SelectValue placeholder="ক্যাটাগরি ফিল্টার" />
@@ -235,6 +293,13 @@ const Transactions = () => {
                 ))}
               </SelectContent>
             </Select>
+
+            <AdvancedFilters
+              filters={advancedFilters}
+              onFiltersChange={setAdvancedFilters}
+              tags={tags}
+              onClear={clearAdvancedFilters}
+            />
           </div>
         </div>
 
@@ -337,7 +402,9 @@ const Transactions = () => {
                 })}
 
                 {/* Render single expenses */}
-                {singleExpenses.map((expense) => (
+                {singleExpenses.map((expense) => {
+                  const expenseTags = getExpenseTags(expense.id);
+                  return (
                   <Card key={expense.id} className="p-4">
                     <div className="flex justify-between items-start mb-2">
                       <div className="flex-1">
@@ -348,6 +415,19 @@ const Transactions = () => {
                         <p className="text-xs text-muted-foreground mt-1">
                           {format(new Date(expense.expense_date), "dd/MM/yyyy")}
                         </p>
+                        {expenseTags.length > 0 && (
+                          <div className="flex flex-wrap gap-1 mt-2">
+                            {expenseTags.map((tag) => (
+                              <Badge
+                                key={tag.id}
+                                className="text-xs px-2 py-0"
+                                style={{ backgroundColor: tag.color }}
+                              >
+                                {tag.name_bn}
+                              </Badge>
+                            ))}
+                          </div>
+                        )}
                       </div>
                       <div className="text-right">
                         <p className="text-xl font-bold text-red-600">৳ {Number(expense.total_price).toFixed(2)}</p>
@@ -382,7 +462,8 @@ const Transactions = () => {
                       </Button>
                     </div>
                   </Card>
-                ))}
+                  );
+                })}
               </>
             )}
           </TabsContent>

@@ -6,8 +6,9 @@ import { Card } from "@/components/ui/card";
 import { PlusCircle, Wallet, TrendingDown, TrendingUp, History, Image as ImageIcon } from "lucide-react";
 import Navigation from "@/components/Navigation";
 import { useToast } from "@/hooks/use-toast";
-import { format } from "date-fns";
+import { format, subDays } from "date-fns";
 import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip } from "recharts";
+import ExpenseTrendChart from "@/components/ExpenseTrendChart";
 
 const Dashboard = () => {
   const navigate = useNavigate();
@@ -18,6 +19,7 @@ const Dashboard = () => {
   const [monthExpenses, setMonthExpenses] = useState(0);
   const [recentTransactions, setRecentTransactions] = useState<any[]>([]);
   const [categoryExpenses, setCategoryExpenses] = useState<any[]>([]);
+  const [last7DaysExpenses, setLast7DaysExpenses] = useState<any[]>([]);
 
   useEffect(() => {
     fetchDashboardData();
@@ -95,6 +97,13 @@ const Dashboard = () => {
         value,
       }));
       setCategoryExpenses(chartData);
+
+      // Get last 7 days expenses for trend chart
+      const sevenDaysAgo = subDays(new Date(), 7);
+      const recentExpensesForChart = allExpenses?.filter(e => 
+        new Date(e.expense_date) >= sevenDaysAgo
+      ) || [];
+      setLast7DaysExpenses(recentExpensesForChart);
 
       // Get recent transactions
       const recent = [
@@ -204,6 +213,11 @@ const Dashboard = () => {
             </Button>
           </div>
         </div>
+
+        {/* Expense Trend Chart */}
+        {last7DaysExpenses.length > 0 && (
+          <ExpenseTrendChart expenses={last7DaysExpenses} days={7} />
+        )}
 
         {recentTransactions.length > 0 && (
           <Card className="p-4 md:p-6 mt-6">
