@@ -14,6 +14,7 @@ import { useTheme } from "@/hooks/useTheme";
 import { useEditMode } from "@/hooks/useEditMode";
 import EditItemDialog from "@/components/EditItemDialog";
 import { Switch } from "@/components/ui/switch";
+import FamilySharing from "@/components/FamilySharing";
 
 // Validation schemas
 const nameSchema = z.object({
@@ -450,6 +451,8 @@ const Settings = () => {
             </Button>
           </div>
         </Card>
+
+        <FamilySharing />
 
         <Card className="p-4 md:p-6 space-y-4">
           <div className="flex items-center justify-between">
