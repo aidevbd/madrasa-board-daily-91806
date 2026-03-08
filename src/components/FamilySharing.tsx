@@ -10,6 +10,10 @@ import { Users, Plus, Copy, Trash2, UserPlus, Crown, LogOut, Check } from "lucid
 import { useToast } from "@/hooks/use-toast";
 import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
+import { z } from "zod";
+
+const familyNameSchema = z.string().trim().min(1, "পরিবারের নাম লিখুন").max(50, "নাম সর্বোচ্চ ৫০ অক্ষরের হতে পারে");
+const inviteCodeSchema = z.string().trim().length(8, "কোড ৮ অক্ষরের হতে হবে").regex(/^[A-Z0-9]+$/, "সঠিক কোড লিখুন");
 
 interface Family {
   id: string;
