@@ -479,6 +479,10 @@ export type Database = {
         Args: { _family_id: string; _user_id: string }
         Returns: boolean
       }
+      is_in_same_family: {
+        Args: { _user_id_1: string; _user_id_2: string }
+        Returns: boolean
+      }
       join_family_by_invite_code: {
         Args: { _invite_code: string }
         Returns: string
