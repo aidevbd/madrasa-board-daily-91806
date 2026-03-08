@@ -10,6 +10,10 @@ import { Users, Plus, Copy, Trash2, UserPlus, Crown, LogOut, Check } from "lucid
 import { useToast } from "@/hooks/use-toast";
 import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
+import { z } from "zod";
+
+const familyNameSchema = z.string().trim().min(1, "পরিবারের নাম লিখুন").max(50, "নাম সর্বোচ্চ ৫০ অক্ষরের হতে পারে");
+const inviteCodeSchema = z.string().trim().length(8, "কোড ৮ অক্ষরের হতে হবে").regex(/^[A-Z0-9]+$/, "সঠিক কোড লিখুন");
 
 interface Family {
   id: string;
@@ -84,8 +88,9 @@ const FamilySharing = () => {
   };
 
   const createFamily = async () => {
-    if (!newFamilyName.trim()) {
-      toast({ title: "ত্রুটি", description: "পরিবারের নাম লিখুন", variant: "destructive" });
+    const result = familyNameSchema.safeParse(newFamilyName);
+    if (!result.success) {
+      toast({ title: "ত্রুটি", description: result.error.errors[0].message, variant: "destructive" });
       return;
     }
 
@@ -130,8 +135,9 @@ const FamilySharing = () => {
   };
 
   const joinFamily = async () => {
-    if (!joinCode.trim()) {
-      toast({ title: "ত্রুটি", description: "ইনভাইট কোড লিখুন", variant: "destructive" });
+    const result = inviteCodeSchema.safeParse(joinCode);
+    if (!result.success) {
+      toast({ title: "ত্রুটি", description: result.error.errors[0].message, variant: "destructive" });
       return;
     }
 

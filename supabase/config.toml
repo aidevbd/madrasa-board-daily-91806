@@ -8,3 +8,6 @@ verify_jwt = true
 
 [functions.reports-custom]
 verify_jwt = true
+
+[functions.ocr-receipt]
+verify_jwt = false
