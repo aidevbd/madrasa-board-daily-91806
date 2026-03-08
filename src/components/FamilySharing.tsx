@@ -135,8 +135,9 @@ const FamilySharing = () => {
   };
 
   const joinFamily = async () => {
-    if (!joinCode.trim()) {
-      toast({ title: "ত্রুটি", description: "ইনভাইট কোড লিখুন", variant: "destructive" });
+    const result = inviteCodeSchema.safeParse(joinCode);
+    if (!result.success) {
+      toast({ title: "ত্রুটি", description: result.error.errors[0].message, variant: "destructive" });
       return;
     }
 
