@@ -88,8 +88,9 @@ const FamilySharing = () => {
   };
 
   const createFamily = async () => {
-    if (!newFamilyName.trim()) {
-      toast({ title: "ত্রুটি", description: "পরিবারের নাম লিখুন", variant: "destructive" });
+    const result = familyNameSchema.safeParse(newFamilyName);
+    if (!result.success) {
+      toast({ title: "ত্রুটি", description: result.error.errors[0].message, variant: "destructive" });
       return;
     }
 
