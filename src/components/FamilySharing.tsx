@@ -98,8 +98,14 @@ const FamilySharing = () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
 
-      // Generate a unique 8-character invite code
-      const inviteCode = Math.random().toString(36).substring(2, 10).toUpperCase();
+      // Generate a cryptographically secure 8-character invite code
+      const array = new Uint8Array(6);
+      crypto.getRandomValues(array);
+      const inviteCode = Array.from(array)
+        .map(b => b.toString(36).padStart(2, '0'))
+        .join('')
+        .toUpperCase()
+        .substring(0, 8);
 
       const { data: familyData, error: familyError } = await (supabase
         .from("families" as any)
