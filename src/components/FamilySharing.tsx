@@ -148,43 +148,20 @@ const FamilySharing = () => {
     }
 
     try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
+      // Use server-side RPC to join by invite code (prevents invite code exposure)
+      const { data, error } = await supabase.rpc("join_family_by_invite_code", {
+        _invite_code: joinCode.trim().toUpperCase(),
+      });
 
-      // Find family by invite code
-      const { data: familyData, error: findError } = await (supabase
-        .from("families" as any)
-        .select()
-        .eq("invite_code", joinCode.trim().toUpperCase())
-        .single() as any);
-
-      if (findError || !familyData) {
-        toast({ title: "ত্রুটি", description: "কোড সঠিক নয়", variant: "destructive" });
+      if (error) {
+        const msg = error.message.includes("Invalid invite code")
+          ? "কোড সঠিক নয়"
+          : error.message.includes("Already a member")
+          ? "আপনি ইতিমধ্যে এই পরিবারের সদস্য"
+          : error.message || "পরিবারে যোগ দিতে সমস্যা";
+        toast({ title: "ত্রুটি", description: msg, variant: "destructive" });
         return;
       }
-
-      // Check if already a member
-      const { data: existingMember } = await (supabase
-        .from("family_members" as any)
-        .select()
-        .eq("family_id", familyData.id)
-        .eq("member_user_id", user.id)
-        .single() as any);
-
-      if (existingMember) {
-        toast({ title: "ত্রুটি", description: "আপনি ইতিমধ্যে এই পরিবারের সদস্য", variant: "destructive" });
-        return;
-      }
-
-      const { error: memberError } = await (supabase
-        .from("family_members" as any)
-        .insert({
-          family_id: familyData.id,
-          member_user_id: user.id,
-          can_add: false,
-        }) as any);
-
-      if (memberError) throw memberError;
 
       toast({ title: "সফল", description: "পরিবারে যোগ হয়েছেন" });
       setShowJoinDialog(false);
