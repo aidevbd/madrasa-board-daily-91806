@@ -479,6 +479,10 @@ export type Database = {
         Args: { _family_id: string; _user_id: string }
         Returns: boolean
       }
+      join_family_by_invite_code: {
+        Args: { _invite_code: string }
+        Returns: string
+      }
     }
     Enums: {
       [_ in never]: never
