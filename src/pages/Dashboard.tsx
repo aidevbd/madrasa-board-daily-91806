@@ -3,12 +3,13 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { PlusCircle, Wallet, TrendingDown, TrendingUp, History, Image as ImageIcon } from "lucide-react";
+import { PlusCircle, Wallet, TrendingDown, TrendingUp, History, Image as ImageIcon, Users, User } from "lucide-react";
 import Navigation from "@/components/Navigation";
 import { useToast } from "@/hooks/use-toast";
 import { format, subDays } from "date-fns";
 import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip } from "recharts";
 import ExpenseTrendChart from "@/components/ExpenseTrendChart";
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 
 const Dashboard = () => {
   const navigate = useNavigate();
@@ -20,10 +21,12 @@ const Dashboard = () => {
   const [recentTransactions, setRecentTransactions] = useState<any[]>([]);
   const [categoryExpenses, setCategoryExpenses] = useState<any[]>([]);
   const [last7DaysExpenses, setLast7DaysExpenses] = useState<any[]>([]);
+  const [viewMode, setViewMode] = useState<"mine" | "family">("family");
+  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
 
   useEffect(() => {
     fetchDashboardData();
-  }, []);
+  }, [viewMode]);
 
   const fetchDashboardData = async () => {
     try {
