@@ -3,12 +3,13 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { PlusCircle, Wallet, TrendingDown, TrendingUp, History, Image as ImageIcon } from "lucide-react";
+import { PlusCircle, Wallet, TrendingDown, TrendingUp, History, Image as ImageIcon, Users, User } from "lucide-react";
 import Navigation from "@/components/Navigation";
 import { useToast } from "@/hooks/use-toast";
 import { format, subDays } from "date-fns";
 import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip } from "recharts";
 import ExpenseTrendChart from "@/components/ExpenseTrendChart";
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 
 const Dashboard = () => {
   const navigate = useNavigate();
@@ -20,10 +21,11 @@ const Dashboard = () => {
   const [recentTransactions, setRecentTransactions] = useState<any[]>([]);
   const [categoryExpenses, setCategoryExpenses] = useState<any[]>([]);
   const [last7DaysExpenses, setLast7DaysExpenses] = useState<any[]>([]);
+  const [viewMode, setViewMode] = useState<"mine" | "family">("family");
 
   useEffect(() => {
     fetchDashboardData();
-  }, []);
+  }, [viewMode]);
 
   const fetchDashboardData = async () => {
     try {
@@ -33,42 +35,54 @@ const Dashboard = () => {
         return;
       }
 
+      
+
       const now = new Date();
       const firstDay = new Date(now.getFullYear(), now.getMonth(), 1);
       const lastDay = new Date(now.getFullYear(), now.getMonth() + 1, 0);
 
-      // Fetch all funds (RLS handles family visibility)
-      const { data: allFunds, error: fundsError } = await supabase
+      // Build query with optional user filter
+      const fundsQuery = supabase
         .from("funds")
         .select("*")
         .order("fund_date", { ascending: false });
-
-      if (fundsError) throw fundsError;
-
-      // Fetch all expenses (RLS handles family visibility)
-      const { data: allExpenses, error: expensesError } = await supabase
+      
+      const expensesQuery = supabase
         .from("expenses")
         .select("*")
         .order("expense_date", { ascending: false });
 
-      if (expensesError) throw expensesError;
-
-      // Fetch this month's funds (RLS handles family visibility)
-      const { data: thisMonthFunds, error: monthFundsError } = await supabase
+      const monthFundsQuery = supabase
         .from("funds")
         .select("amount")
         .gte("fund_date", firstDay.toISOString().split("T")[0])
         .lte("fund_date", lastDay.toISOString().split("T")[0]);
 
-      if (monthFundsError) throw monthFundsError;
-
-      // Fetch this month's expenses (RLS handles family visibility)
-      const { data: thisMonthExpenses, error: monthExpensesError } = await supabase
+      const monthExpensesQuery = supabase
         .from("expenses")
         .select("total_price, category_id, expense_categories(name_bn)")
         .gte("expense_date", firstDay.toISOString().split("T")[0])
         .lte("expense_date", lastDay.toISOString().split("T")[0]);
 
+      // Apply user filter if "mine" mode
+      if (viewMode === "mine") {
+        fundsQuery.eq("user_id", user.id);
+        expensesQuery.eq("user_id", user.id);
+        monthFundsQuery.eq("user_id", user.id);
+        monthExpensesQuery.eq("user_id", user.id);
+      }
+
+      // Fetch all data
+      const { data: allFunds, error: fundsError } = await fundsQuery;
+      if (fundsError) throw fundsError;
+
+      const { data: allExpenses, error: expensesError } = await expensesQuery;
+      if (expensesError) throw expensesError;
+
+      const { data: thisMonthFunds, error: monthFundsError } = await monthFundsQuery;
+      if (monthFundsError) throw monthFundsError;
+
+      const { data: thisMonthExpenses, error: monthExpensesError } = await monthExpensesQuery;
       if (monthExpensesError) throw monthExpensesError;
 
       const totalFunds = allFunds?.reduce((sum, f) => sum + Number(f.amount), 0) || 0;
@@ -135,7 +149,32 @@ const Dashboard = () => {
   return (
     <div className="min-h-screen bg-muted/30 pb-20 md:pb-24 lg:pb-28">
       <div className="bg-primary text-primary-foreground p-6 md:p-8 lg:p-10 rounded-b-3xl shadow-lg">
-        <h1 className="text-2xl md:text-3xl lg:text-4xl font-bold mb-6 md:mb-8">ড্যাশবোর্ড</h1>
+        <div className="flex justify-between items-center mb-4 md:mb-6">
+          <h1 className="text-2xl md:text-3xl lg:text-4xl font-bold">ড্যাশবোর্ড</h1>
+          <ToggleGroup 
+            type="single" 
+            value={viewMode} 
+            onValueChange={(value) => value && setViewMode(value as "mine" | "family")}
+            className="bg-primary-foreground/10 rounded-lg p-1"
+          >
+            <ToggleGroupItem 
+              value="mine" 
+              aria-label="শুধু আমার"
+              className="data-[state=on]:bg-primary-foreground data-[state=on]:text-primary text-primary-foreground px-3 py-1.5 text-xs md:text-sm"
+            >
+              <User className="h-4 w-4 mr-1" />
+              আমার
+            </ToggleGroupItem>
+            <ToggleGroupItem 
+              value="family" 
+              aria-label="পরিবার সহ"
+              className="data-[state=on]:bg-primary-foreground data-[state=on]:text-primary text-primary-foreground px-3 py-1.5 text-xs md:text-sm"
+            >
+              <Users className="h-4 w-4 mr-1" />
+              পরিবার
+            </ToggleGroupItem>
+          </ToggleGroup>
+        </div>
         
         <Card className="bg-primary-foreground/10 border-primary-foreground/20 backdrop-blur-sm max-w-2xl mx-auto">
           <div className="p-6 md:p-8">
