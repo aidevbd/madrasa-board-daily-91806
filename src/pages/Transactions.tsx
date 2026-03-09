@@ -491,9 +491,15 @@ const Transactions = () => {
                       <h3 className="font-semibold text-lg">
                         {fund.source_note_bn || "জমা"}
                       </h3>
-                      <p className="text-xs text-muted-foreground mt-1">
-                        {format(new Date(fund.fund_date), "dd/MM/yyyy")}
-                      </p>
+                      <div className="flex items-center gap-2 text-xs text-muted-foreground mt-1">
+                        <span>{format(new Date(fund.fund_date), "dd/MM/yyyy")}</span>
+                        {fund.profiles?.email && (
+                          <>
+                            <span>•</span>
+                            <span>{fund.profiles.email}</span>
+                          </>
+                        )}
+                      </div>
                     </div>
                     <div className="text-right">
                       <p className="text-xl font-bold text-green-600">৳ {Number(fund.amount).toFixed(2)}</p>
