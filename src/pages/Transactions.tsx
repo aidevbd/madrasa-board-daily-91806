@@ -59,12 +59,12 @@ const Transactions = () => {
       const [expensesRes, fundsRes, categoriesRes, unitsRes, tagsRes, tagRelationsRes] = await Promise.all([
         supabase
           .from("expenses")
-          .select("*, expense_categories(name_bn), units(name_bn)")
+          .select("*, expense_categories(name_bn), units(name_bn), profiles(email)")
           .order("expense_date", { ascending: false })
           .limit(100),
         supabase
           .from("funds")
-          .select("*")
+          .select("*, profiles(email)")
           .order("fund_date", { ascending: false })
           .limit(100),
         supabase
