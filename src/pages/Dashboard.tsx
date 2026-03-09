@@ -41,15 +41,15 @@ const Dashboard = () => {
       const firstDay = new Date(now.getFullYear(), now.getMonth(), 1);
       const lastDay = new Date(now.getFullYear(), now.getMonth() + 1, 0);
 
-      // Build query with optional user filter
+      // Build query with optional user filter and profile join
       const fundsQuery = supabase
         .from("funds")
-        .select("*")
+        .select("*, profiles(email)")
         .order("fund_date", { ascending: false });
       
       const expensesQuery = supabase
         .from("expenses")
-        .select("*")
+        .select("*, profiles(email)")
         .order("expense_date", { ascending: false });
 
       const monthFundsQuery = supabase
