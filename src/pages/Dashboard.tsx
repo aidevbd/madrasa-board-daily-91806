@@ -37,39 +37,35 @@ const Dashboard = () => {
       const firstDay = new Date(now.getFullYear(), now.getMonth(), 1);
       const lastDay = new Date(now.getFullYear(), now.getMonth() + 1, 0);
 
-      // Fetch all funds
+      // Fetch all funds (RLS handles family visibility)
       const { data: allFunds, error: fundsError } = await supabase
         .from("funds")
         .select("*")
-        .eq("user_id", user.id)
         .order("fund_date", { ascending: false });
 
       if (fundsError) throw fundsError;
 
-      // Fetch all expenses
+      // Fetch all expenses (RLS handles family visibility)
       const { data: allExpenses, error: expensesError } = await supabase
         .from("expenses")
         .select("*")
-        .eq("user_id", user.id)
         .order("expense_date", { ascending: false });
 
       if (expensesError) throw expensesError;
 
-      // Fetch this month's funds
+      // Fetch this month's funds (RLS handles family visibility)
       const { data: thisMonthFunds, error: monthFundsError } = await supabase
         .from("funds")
         .select("amount")
-        .eq("user_id", user.id)
         .gte("fund_date", firstDay.toISOString().split("T")[0])
         .lte("fund_date", lastDay.toISOString().split("T")[0]);
 
       if (monthFundsError) throw monthFundsError;
 
-      // Fetch this month's expenses
+      // Fetch this month's expenses (RLS handles family visibility)
       const { data: thisMonthExpenses, error: monthExpensesError } = await supabase
         .from("expenses")
         .select("total_price, category_id, expense_categories(name_bn)")
-        .eq("user_id", user.id)
         .gte("expense_date", firstDay.toISOString().split("T")[0])
         .lte("expense_date", lastDay.toISOString().split("T")[0]);
 

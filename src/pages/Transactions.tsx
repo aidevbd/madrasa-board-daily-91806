@@ -60,29 +60,24 @@ const Transactions = () => {
         supabase
           .from("expenses")
           .select("*, expense_categories(name_bn), units(name_bn)")
-          .eq("user_id", user.id)
           .order("expense_date", { ascending: false })
           .limit(100),
         supabase
           .from("funds")
           .select("*")
-          .eq("user_id", user.id)
           .order("fund_date", { ascending: false })
           .limit(100),
         supabase
           .from("expense_categories")
           .select("*")
-          .eq("user_id", user.id)
           .order("name_bn"),
         supabase
           .from("units")
           .select("*")
-          .eq("user_id", user.id)
           .order("name_bn"),
         supabase
           .from("expense_tags")
           .select("*")
-          .eq("user_id", user.id)
           .order("name_bn"),
         supabase
           .from("expense_tag_relations")
