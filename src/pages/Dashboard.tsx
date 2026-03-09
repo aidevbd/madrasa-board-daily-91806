@@ -41,15 +41,15 @@ const Dashboard = () => {
       const firstDay = new Date(now.getFullYear(), now.getMonth(), 1);
       const lastDay = new Date(now.getFullYear(), now.getMonth() + 1, 0);
 
-      // Build query with optional user filter
+      // Build query with optional user filter and profile join
       const fundsQuery = supabase
         .from("funds")
-        .select("*")
+        .select("*, profiles(email)")
         .order("fund_date", { ascending: false });
       
       const expensesQuery = supabase
         .from("expenses")
-        .select("*")
+        .select("*, profiles(email)")
         .order("expense_date", { ascending: false });
 
       const monthFundsQuery = supabase
@@ -270,9 +270,15 @@ const Dashboard = () => {
                     <p className="font-medium text-sm md:text-base lg:text-lg">
                       {transaction.type === 'expense' ? transaction.item_name_bn : transaction.source_note_bn || 'জমা'}
                     </p>
-                    <p className="text-xs md:text-sm text-muted-foreground">
-                      {format(new Date(transaction.date), "dd/MM/yyyy")}
-                    </p>
+                    <div className="flex items-center gap-2 text-xs md:text-sm text-muted-foreground">
+                      <span>{format(new Date(transaction.date), "dd/MM/yyyy")}</span>
+                      {transaction.profiles?.email && (
+                        <>
+                          <span>•</span>
+                          <span className="text-xs">{transaction.profiles.email}</span>
+                        </>
+                      )}
+                    </div>
                   </div>
                   <p className={`font-semibold text-base md:text-lg lg:text-xl ${transaction.type === 'expense' ? 'text-red-600' : 'text-green-600'}`}>
                     {transaction.type === 'expense' ? '-' : '+'}৳ {Number(transaction.type === 'expense' ? transaction.total_price : transaction.amount).toFixed(2)}

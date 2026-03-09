@@ -59,12 +59,12 @@ const Transactions = () => {
       const [expensesRes, fundsRes, categoriesRes, unitsRes, tagsRes, tagRelationsRes] = await Promise.all([
         supabase
           .from("expenses")
-          .select("*, expense_categories(name_bn), units(name_bn)")
+          .select("*, expense_categories(name_bn), units(name_bn), profiles(email)")
           .order("expense_date", { ascending: false })
           .limit(100),
         supabase
           .from("funds")
-          .select("*")
+          .select("*, profiles(email)")
           .order("fund_date", { ascending: false })
           .limit(100),
         supabase
@@ -340,9 +340,15 @@ const Transactions = () => {
                             {firstExpense.expense_categories && (
                               <p className="text-sm text-muted-foreground">{firstExpense.expense_categories.name_bn}</p>
                             )}
-                            <p className="text-xs text-muted-foreground mt-1">
-                              {format(new Date(firstExpense.expense_date), "dd/MM/yyyy")}
-                            </p>
+                            <div className="flex items-center gap-2 text-xs text-muted-foreground mt-1">
+                              <span>{format(new Date(firstExpense.expense_date), "dd/MM/yyyy")}</span>
+                              {firstExpense.profiles?.email && (
+                                <>
+                                  <span>•</span>
+                                  <span>{firstExpense.profiles.email}</span>
+                                </>
+                              )}
+                            </div>
                           </div>
                           <div className="text-right">
                             <p className="text-xl font-bold text-red-600">৳ {totalAmount.toFixed(2)}</p>
@@ -407,9 +413,15 @@ const Transactions = () => {
                         {expense.expense_categories && (
                           <p className="text-sm text-muted-foreground">{expense.expense_categories.name_bn}</p>
                         )}
-                        <p className="text-xs text-muted-foreground mt-1">
-                          {format(new Date(expense.expense_date), "dd/MM/yyyy")}
-                        </p>
+                        <div className="flex items-center gap-2 text-xs text-muted-foreground mt-1">
+                          <span>{format(new Date(expense.expense_date), "dd/MM/yyyy")}</span>
+                          {expense.profiles?.email && (
+                            <>
+                              <span>•</span>
+                              <span>{expense.profiles.email}</span>
+                            </>
+                          )}
+                        </div>
                         {expenseTags.length > 0 && (
                           <div className="flex flex-wrap gap-1 mt-2">
                             {expenseTags.map((tag) => (
@@ -479,9 +491,15 @@ const Transactions = () => {
                       <h3 className="font-semibold text-lg">
                         {fund.source_note_bn || "জমা"}
                       </h3>
-                      <p className="text-xs text-muted-foreground mt-1">
-                        {format(new Date(fund.fund_date), "dd/MM/yyyy")}
-                      </p>
+                      <div className="flex items-center gap-2 text-xs text-muted-foreground mt-1">
+                        <span>{format(new Date(fund.fund_date), "dd/MM/yyyy")}</span>
+                        {fund.profiles?.email && (
+                          <>
+                            <span>•</span>
+                            <span>{fund.profiles.email}</span>
+                          </>
+                        )}
+                      </div>
                     </div>
                     <div className="text-right">
                       <p className="text-xl font-bold text-green-600">৳ {Number(fund.amount).toFixed(2)}</p>
