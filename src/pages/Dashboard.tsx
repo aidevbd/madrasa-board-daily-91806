@@ -36,42 +36,54 @@ const Dashboard = () => {
         return;
       }
 
+      setCurrentUserId(user.id);
+
       const now = new Date();
       const firstDay = new Date(now.getFullYear(), now.getMonth(), 1);
       const lastDay = new Date(now.getFullYear(), now.getMonth() + 1, 0);
 
-      // Fetch all funds (RLS handles family visibility)
-      const { data: allFunds, error: fundsError } = await supabase
+      // Build query with optional user filter
+      const fundsQuery = supabase
         .from("funds")
         .select("*")
         .order("fund_date", { ascending: false });
-
-      if (fundsError) throw fundsError;
-
-      // Fetch all expenses (RLS handles family visibility)
-      const { data: allExpenses, error: expensesError } = await supabase
+      
+      const expensesQuery = supabase
         .from("expenses")
         .select("*")
         .order("expense_date", { ascending: false });
 
-      if (expensesError) throw expensesError;
-
-      // Fetch this month's funds (RLS handles family visibility)
-      const { data: thisMonthFunds, error: monthFundsError } = await supabase
+      const monthFundsQuery = supabase
         .from("funds")
         .select("amount")
         .gte("fund_date", firstDay.toISOString().split("T")[0])
         .lte("fund_date", lastDay.toISOString().split("T")[0]);
 
-      if (monthFundsError) throw monthFundsError;
-
-      // Fetch this month's expenses (RLS handles family visibility)
-      const { data: thisMonthExpenses, error: monthExpensesError } = await supabase
+      const monthExpensesQuery = supabase
         .from("expenses")
         .select("total_price, category_id, expense_categories(name_bn)")
         .gte("expense_date", firstDay.toISOString().split("T")[0])
         .lte("expense_date", lastDay.toISOString().split("T")[0]);
 
+      // Apply user filter if "mine" mode
+      if (viewMode === "mine") {
+        fundsQuery.eq("user_id", user.id);
+        expensesQuery.eq("user_id", user.id);
+        monthFundsQuery.eq("user_id", user.id);
+        monthExpensesQuery.eq("user_id", user.id);
+      }
+
+      // Fetch all data
+      const { data: allFunds, error: fundsError } = await fundsQuery;
+      if (fundsError) throw fundsError;
+
+      const { data: allExpenses, error: expensesError } = await expensesQuery;
+      if (expensesError) throw expensesError;
+
+      const { data: thisMonthFunds, error: monthFundsError } = await monthFundsQuery;
+      if (monthFundsError) throw monthFundsError;
+
+      const { data: thisMonthExpenses, error: monthExpensesError } = await monthExpensesQuery;
       if (monthExpensesError) throw monthExpensesError;
 
       const totalFunds = allFunds?.reduce((sum, f) => sum + Number(f.amount), 0) || 0;
