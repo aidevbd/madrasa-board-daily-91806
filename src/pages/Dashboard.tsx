@@ -22,7 +22,6 @@ const Dashboard = () => {
   const [categoryExpenses, setCategoryExpenses] = useState<any[]>([]);
   const [last7DaysExpenses, setLast7DaysExpenses] = useState<any[]>([]);
   const [viewMode, setViewMode] = useState<"mine" | "family">("family");
-  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
 
   useEffect(() => {
     fetchDashboardData();
