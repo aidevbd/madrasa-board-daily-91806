@@ -150,7 +150,32 @@ const Dashboard = () => {
   return (
     <div className="min-h-screen bg-muted/30 pb-20 md:pb-24 lg:pb-28">
       <div className="bg-primary text-primary-foreground p-6 md:p-8 lg:p-10 rounded-b-3xl shadow-lg">
-        <h1 className="text-2xl md:text-3xl lg:text-4xl font-bold mb-6 md:mb-8">ড্যাশবোর্ড</h1>
+        <div className="flex justify-between items-center mb-4 md:mb-6">
+          <h1 className="text-2xl md:text-3xl lg:text-4xl font-bold">ড্যাশবোর্ড</h1>
+          <ToggleGroup 
+            type="single" 
+            value={viewMode} 
+            onValueChange={(value) => value && setViewMode(value as "mine" | "family")}
+            className="bg-primary-foreground/10 rounded-lg p-1"
+          >
+            <ToggleGroupItem 
+              value="mine" 
+              aria-label="শুধু আমার"
+              className="data-[state=on]:bg-primary-foreground data-[state=on]:text-primary text-primary-foreground px-3 py-1.5 text-xs md:text-sm"
+            >
+              <User className="h-4 w-4 mr-1" />
+              আমার
+            </ToggleGroupItem>
+            <ToggleGroupItem 
+              value="family" 
+              aria-label="পরিবার সহ"
+              className="data-[state=on]:bg-primary-foreground data-[state=on]:text-primary text-primary-foreground px-3 py-1.5 text-xs md:text-sm"
+            >
+              <Users className="h-4 w-4 mr-1" />
+              পরিবার
+            </ToggleGroupItem>
+          </ToggleGroup>
+        </div>
         
         <Card className="bg-primary-foreground/10 border-primary-foreground/20 backdrop-blur-sm max-w-2xl mx-auto">
           <div className="p-6 md:p-8">
