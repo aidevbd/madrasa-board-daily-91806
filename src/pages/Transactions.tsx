@@ -340,9 +340,15 @@ const Transactions = () => {
                             {firstExpense.expense_categories && (
                               <p className="text-sm text-muted-foreground">{firstExpense.expense_categories.name_bn}</p>
                             )}
-                            <p className="text-xs text-muted-foreground mt-1">
-                              {format(new Date(firstExpense.expense_date), "dd/MM/yyyy")}
-                            </p>
+                            <div className="flex items-center gap-2 text-xs text-muted-foreground mt-1">
+                              <span>{format(new Date(firstExpense.expense_date), "dd/MM/yyyy")}</span>
+                              {firstExpense.profiles?.email && (
+                                <>
+                                  <span>•</span>
+                                  <span>{firstExpense.profiles.email}</span>
+                                </>
+                              )}
+                            </div>
                           </div>
                           <div className="text-right">
                             <p className="text-xl font-bold text-red-600">৳ {totalAmount.toFixed(2)}</p>
