@@ -413,9 +413,15 @@ const Transactions = () => {
                         {expense.expense_categories && (
                           <p className="text-sm text-muted-foreground">{expense.expense_categories.name_bn}</p>
                         )}
-                        <p className="text-xs text-muted-foreground mt-1">
-                          {format(new Date(expense.expense_date), "dd/MM/yyyy")}
-                        </p>
+                        <div className="flex items-center gap-2 text-xs text-muted-foreground mt-1">
+                          <span>{format(new Date(expense.expense_date), "dd/MM/yyyy")}</span>
+                          {expense.profiles?.email && (
+                            <>
+                              <span>•</span>
+                              <span>{expense.profiles.email}</span>
+                            </>
+                          )}
+                        </div>
                         {expenseTags.length > 0 && (
                           <div className="flex flex-wrap gap-1 mt-2">
                             {expenseTags.map((tag) => (
