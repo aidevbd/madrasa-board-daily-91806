@@ -6,7 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Card } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
-import { Users, Plus, Copy, Trash2, UserPlus, Crown, LogOut, Check } from "lucide-react";
+import { Users, Plus, Copy, Trash2, UserPlus, Crown, LogOut, Check, RefreshCw } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
@@ -45,6 +45,8 @@ const FamilySharing = () => {
   const [showJoinDialog, setShowJoinDialog] = useState(false);
   const [showLeaveDialog, setShowLeaveDialog] = useState(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [showRegenerateDialog, setShowRegenerateDialog] = useState(false);
+  const [regenerating, setRegenerating] = useState(false);
   const [newFamilyName, setNewFamilyName] = useState("");
   const [joinCode, setJoinCode] = useState("");
   const [codeCopied, setCodeCopied] = useState(false);
@@ -263,6 +265,39 @@ const FamilySharing = () => {
     }
   };
 
+  const regenerateInviteCode = async () => {
+    if (!family) return;
+    setRegenerating(true);
+    try {
+      const array = new Uint8Array(6);
+      crypto.getRandomValues(array);
+      const newCode = Array.from(array)
+        .map(b => b.toString(36).padStart(2, '0'))
+        .join('')
+        .toUpperCase()
+        .substring(0, 8);
+
+      const { data, error } = await (supabase
+        .from("families" as any)
+        .update({ invite_code: newCode })
+        .eq("id", family.id)
+        .select()
+        .single() as any);
+
+      if (error) throw error;
+
+      setFamily({ ...family, invite_code: (data as any).invite_code });
+      toast({ title: "সফল", description: "নতুন ইনভাইট কোড তৈরি হয়েছে। পুরানো কোডটি আর কাজ করবে না।" });
+      setShowRegenerateDialog(false);
+    } catch (error: any) {
+      console.error("Error regenerating invite code:", error);
+      toast({ title: "ত্রুটি", description: error.message || "কোড রিজেনারেট করতে সমস্যা", variant: "destructive" });
+    } finally {
+      setRegenerating(false);
+    }
+  };
+
+
   if (loading) {
     return (
       <Card className="p-4 md:p-6 space-y-3">
@@ -359,14 +394,28 @@ const FamilySharing = () => {
           </div>
 
           {isOwner && (
-            <div className="flex items-center gap-2 p-3 bg-muted rounded-lg">
-              <span className="text-sm font-medium">ইনভাইট কোড:</span>
-              <code className="bg-background px-2 py-1 rounded text-sm font-mono flex-1">
-                {family.invite_code}
-              </code>
-              <Button variant="ghost" size="icon" onClick={copyInviteCode}>
-                {codeCopied ? <Check className="h-4 w-4 text-green-500" /> : <Copy className="h-4 w-4" />}
-              </Button>
+            <div className="space-y-2 p-3 bg-muted rounded-lg">
+              <div className="flex items-center gap-2">
+                <span className="text-sm font-medium">ইনভাইট কোড:</span>
+                <code className="bg-background px-2 py-1 rounded text-sm font-mono flex-1">
+                  {family.invite_code}
+                </code>
+                <Button variant="ghost" size="icon" onClick={copyInviteCode} aria-label="কপি করুন">
+                  {codeCopied ? <Check className="h-4 w-4 text-green-500" /> : <Copy className="h-4 w-4" />}
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => setShowRegenerateDialog(true)}
+                  aria-label="নতুন কোড তৈরি করুন"
+                  title="নতুন কোড তৈরি করুন (পুরানো বাতিল হবে)"
+                >
+                  <RefreshCw className="h-4 w-4" />
+                </Button>
+              </div>
+              <p className="text-xs text-muted-foreground">
+                নতুন কোড তৈরি করলে পুরানো কোড আর কাজ করবে না।
+              </p>
             </div>
           )}
 
@@ -467,6 +516,23 @@ const FamilySharing = () => {
             <AlertDialogCancel>বাতিল</AlertDialogCancel>
             <AlertDialogAction onClick={deleteFamily} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
               মুছে ফেলুন
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+      {/* Regenerate Invite Code Confirmation */}
+      <AlertDialog open={showRegenerateDialog} onOpenChange={setShowRegenerateDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>নতুন ইনভাইট কোড তৈরি করবেন?</AlertDialogTitle>
+            <AlertDialogDescription>
+              পুরানো কোডটি সাথে সাথে বাতিল হয়ে যাবে। যাদের সাথে পুরানো কোড শেয়ার করেছেন তারা আর যোগ দিতে পারবেন না।
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={regenerating}>বাতিল</AlertDialogCancel>
+            <AlertDialogAction onClick={regenerateInviteCode} disabled={regenerating}>
+              {regenerating ? "তৈরি হচ্ছে..." : "নতুন কোড তৈরি করুন"}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
