@@ -28,8 +28,14 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="text-lg text-muted-foreground">লোড হচ্ছে...</div>
+      <div className="min-h-screen p-4 md:p-6 space-y-4 max-w-4xl mx-auto">
+        <Skeleton className="h-16 w-full rounded-2xl" />
+        <div className="grid grid-cols-2 gap-4">
+          <Skeleton className="h-24 rounded-xl" />
+          <Skeleton className="h-24 rounded-xl" />
+        </div>
+        <Skeleton className="h-40 w-full rounded-xl" />
+        <Skeleton className="h-40 w-full rounded-xl" />
       </div>
     );
   }
