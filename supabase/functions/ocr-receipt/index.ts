@@ -115,6 +115,7 @@ JSON format এ উত্তর দিন:
 
     // Parse the JSON response
     let ocrData;
+    let parseWarning: string | null = null;
     try {
       // Extract JSON from markdown code blocks if present
       const jsonMatch = content.match(/```json\n?([\s\S]*?)\n?```/) || content.match(/```\n?([\s\S]*?)\n?```/);
@@ -122,18 +123,19 @@ JSON format এ উত্তর দিন:
       ocrData = JSON.parse(jsonString);
     } catch (parseError) {
       console.error("JSON parse error:", parseError);
-      // Try to extract structured data from text
+      parseWarning = "রশিদ থেকে স্ট্রাকচার্ড তথ্য বের করা যায়নি — অনুগ্রহ করে ম্যানুয়ালি পূরণ করুন।";
+      // Fallback: return raw text so the client can still show something
       ocrData = {
         items: [],
         total: 0,
         date: "",
         shop: "",
-        rawText: content
+        rawText: content,
       };
     }
 
     return new Response(
-      JSON.stringify({ success: true, data: ocrData }),
+      JSON.stringify({ success: true, data: ocrData, warning: parseWarning }),
       {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       }
