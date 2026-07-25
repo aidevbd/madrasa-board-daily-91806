@@ -449,11 +449,12 @@ const AddExpense = () => {
             )}
             {receiptPreview && (
               <div className="relative w-full h-40 bg-muted rounded-lg overflow-hidden mb-2">
-                <img src={receiptPreview} alt="Receipt preview" className="w-full h-full object-cover" />
+                <img src={receiptPreview} alt="আপলোড করা রশিদের প্রিভিউ" className="w-full h-full object-cover" />
                 <Button
                   type="button"
                   variant="destructive"
                   size="sm"
+                  aria-label="রশিদ মুছুন"
                   className="absolute top-2 right-2"
                   onClick={() => {
                     setReceiptPreview(null);

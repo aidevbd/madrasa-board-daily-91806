@@ -155,7 +155,8 @@ const Receipts = () => {
                 <div className="aspect-square bg-muted relative">
                   <img
                     src={receipt.receipt_image_url}
-                    alt={receipt.item_name_bn}
+                    alt={receipt.item_name_bn || "রশিদ"}
+                    loading="lazy"
                     className="w-full h-full object-cover"
                     onError={async (e) => {
                       const signedUrl = await getSignedUrl(receipt.receipt_image_url);
@@ -205,7 +206,7 @@ const Receipts = () => {
                 
                 <img
                   src={selectedReceipt.signedUrl || selectedReceipt.receipt_image_url}
-                  alt={selectedReceipt.item_name_bn}
+                  alt={selectedReceipt.item_name_bn || "রশিদ বিস্তারিত"}
                   className="w-full rounded-lg"
                 />
                 
