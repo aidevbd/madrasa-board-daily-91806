@@ -11,6 +11,7 @@ import { useToast } from "@/hooks/use-toast";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Progress } from "@/components/ui/progress";
 import { format } from "date-fns";
+import { Skeleton } from "@/components/ui/skeleton";
 
 interface Budget {
   id: string;
@@ -147,8 +148,15 @@ const Budget = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <p className="text-muted-foreground">লোড হচ্ছে...</p>
+      <div className="min-h-screen bg-background pb-20 md:pb-24 lg:pb-28">
+        <div className="bg-primary/20 p-4 md:p-6">
+          <Skeleton className="h-8 w-48" />
+        </div>
+        <div className="max-w-4xl mx-auto p-4 space-y-4">
+          {Array.from({ length: 4 }).map((_, i) => (
+            <Skeleton key={i} className="h-28 w-full rounded-xl" />
+          ))}
+        </div>
       </div>
     );
   }

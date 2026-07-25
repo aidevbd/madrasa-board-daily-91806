@@ -10,6 +10,7 @@ import { format, subDays } from "date-fns";
 import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip } from "recharts";
 import ExpenseTrendChart from "@/components/ExpenseTrendChart";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
+import { Skeleton } from "@/components/ui/skeleton";
 
 const Dashboard = () => {
   const navigate = useNavigate();
@@ -140,8 +141,20 @@ const Dashboard = () => {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="text-lg text-muted-foreground">লোড হচ্ছে...</div>
+      <div className="min-h-screen bg-muted/30 pb-20 md:pb-24 lg:pb-28">
+        <div className="bg-primary/20 p-6 md:p-8 lg:p-10 rounded-b-3xl">
+          <Skeleton className="h-8 w-40 mb-6" />
+          <Skeleton className="h-24 w-full rounded-xl" />
+        </div>
+        <div className="max-w-4xl mx-auto p-4 md:p-6 space-y-4">
+          <div className="grid grid-cols-2 gap-3 md:gap-4">
+            <Skeleton className="h-24 rounded-xl" />
+            <Skeleton className="h-24 rounded-xl" />
+          </div>
+          <Skeleton className="h-56 w-full rounded-xl" />
+          <Skeleton className="h-56 w-full rounded-xl" />
+          <Skeleton className="h-40 w-full rounded-xl" />
+        </div>
       </div>
     );
   }
