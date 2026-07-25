@@ -394,14 +394,28 @@ const FamilySharing = () => {
           </div>
 
           {isOwner && (
-            <div className="flex items-center gap-2 p-3 bg-muted rounded-lg">
-              <span className="text-sm font-medium">ইনভাইট কোড:</span>
-              <code className="bg-background px-2 py-1 rounded text-sm font-mono flex-1">
-                {family.invite_code}
-              </code>
-              <Button variant="ghost" size="icon" onClick={copyInviteCode}>
-                {codeCopied ? <Check className="h-4 w-4 text-green-500" /> : <Copy className="h-4 w-4" />}
-              </Button>
+            <div className="space-y-2 p-3 bg-muted rounded-lg">
+              <div className="flex items-center gap-2">
+                <span className="text-sm font-medium">ইনভাইট কোড:</span>
+                <code className="bg-background px-2 py-1 rounded text-sm font-mono flex-1">
+                  {family.invite_code}
+                </code>
+                <Button variant="ghost" size="icon" onClick={copyInviteCode} aria-label="কপি করুন">
+                  {codeCopied ? <Check className="h-4 w-4 text-green-500" /> : <Copy className="h-4 w-4" />}
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => setShowRegenerateDialog(true)}
+                  aria-label="নতুন কোড তৈরি করুন"
+                  title="নতুন কোড তৈরি করুন (পুরানো বাতিল হবে)"
+                >
+                  <RefreshCw className="h-4 w-4" />
+                </Button>
+              </div>
+              <p className="text-xs text-muted-foreground">
+                নতুন কোড তৈরি করলে পুরানো কোড আর কাজ করবে না।
+              </p>
             </div>
           )}
 
@@ -502,6 +516,23 @@ const FamilySharing = () => {
             <AlertDialogCancel>বাতিল</AlertDialogCancel>
             <AlertDialogAction onClick={deleteFamily} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
               মুছে ফেলুন
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+      {/* Regenerate Invite Code Confirmation */}
+      <AlertDialog open={showRegenerateDialog} onOpenChange={setShowRegenerateDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>নতুন ইনভাইট কোড তৈরি করবেন?</AlertDialogTitle>
+            <AlertDialogDescription>
+              পুরানো কোডটি সাথে সাথে বাতিল হয়ে যাবে। যাদের সাথে পুরানো কোড শেয়ার করেছেন তারা আর যোগ দিতে পারবেন না।
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={regenerating}>বাতিল</AlertDialogCancel>
+            <AlertDialogAction onClick={regenerateInviteCode} disabled={regenerating}>
+              {regenerating ? "তৈরি হচ্ছে..." : "নতুন কোড তৈরি করুন"}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
