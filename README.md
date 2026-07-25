@@ -4,7 +4,7 @@ A comprehensive expense and fund management application with Bengali language su
 
 ## 🌟 Features
 
-- **Authentication**: Secure login/signup with email verification
+- **Authentication**: Secure email/password login and signup with forgot-password recovery flow (email verification currently disabled — users are auto-logged in after signup)
 - **Dashboard**: Real-time balance tracking with monthly summaries and recent transactions
 - **Expense Management**: Add, edit, delete expenses with receipt uploads
 - **Fund Management**: Track income sources and deposits
