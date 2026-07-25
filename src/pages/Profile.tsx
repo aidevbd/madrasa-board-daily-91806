@@ -8,6 +8,7 @@ import { Card } from "@/components/ui/card";
 import { ArrowLeft, Key, Mail } from "lucide-react";
 import Navigation from "@/components/Navigation";
 import { useToast } from "@/hooks/use-toast";
+import { Skeleton } from "@/components/ui/skeleton";
 
 const Profile = () => {
   const navigate = useNavigate();
@@ -75,8 +76,14 @@ const Profile = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <p className="text-muted-foreground">লোড হচ্ছে...</p>
+      <div className="min-h-screen bg-background pb-20">
+        <div className="bg-primary/20 p-4">
+          <Skeleton className="h-7 w-32" />
+        </div>
+        <div className="max-w-lg mx-auto p-4 space-y-4">
+          <Skeleton className="h-32 w-full rounded-xl" />
+          <Skeleton className="h-48 w-full rounded-xl" />
+        </div>
       </div>
     );
   }

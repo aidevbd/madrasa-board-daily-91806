@@ -11,6 +11,7 @@ import { useToast } from "@/hooks/use-toast";
 import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
 import { z } from "zod";
+import { Skeleton } from "@/components/ui/skeleton";
 
 const familyNameSchema = z.string().trim().min(1, "পরিবারের নাম লিখুন").max(50, "নাম সর্বোচ্চ ৫০ অক্ষরের হতে পারে");
 const inviteCodeSchema = z.string().trim().length(8, "কোড ৮ অক্ষরের হতে হবে").regex(/^[A-Z0-9]+$/, "সঠিক কোড লিখুন");
@@ -263,7 +264,13 @@ const FamilySharing = () => {
   };
 
   if (loading) {
-    return <Card className="p-4 md:p-6"><p className="text-muted-foreground">লোড হচ্ছে...</p></Card>;
+    return (
+      <Card className="p-4 md:p-6 space-y-3">
+        <Skeleton className="h-6 w-40" />
+        <Skeleton className="h-20 w-full rounded-lg" />
+        <Skeleton className="h-10 w-32" />
+      </Card>
+    );
   }
 
   return (

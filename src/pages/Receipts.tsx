@@ -7,6 +7,7 @@ import { ArrowLeft, Search, Image as ImageIcon, Calendar, DollarSign } from "luc
 import Navigation from "@/components/Navigation";
 import { useToast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
+import { Skeleton } from "@/components/ui/skeleton";
 
 const Receipts = () => {
   const { toast } = useToast();
@@ -131,8 +132,10 @@ const Receipts = () => {
 
         {/* Gallery Grid */}
         {loading ? (
-          <div className="text-center py-8">
-            <p className="text-muted-foreground text-sm md:text-base">লোড হচ্ছে...</p>
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
+            {Array.from({ length: 8 }).map((_, i) => (
+              <Skeleton key={i} className="aspect-square w-full rounded-xl" />
+            ))}
           </div>
         ) : filteredReceipts.length === 0 ? (
           <Card className="p-8 md:p-12 text-center">
