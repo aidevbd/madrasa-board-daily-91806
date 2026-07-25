@@ -6,7 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Card } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
-import { Users, Plus, Copy, Trash2, UserPlus, Crown, LogOut, Check } from "lucide-react";
+import { Users, Plus, Copy, Trash2, UserPlus, Crown, LogOut, Check, RefreshCw } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
@@ -45,6 +45,8 @@ const FamilySharing = () => {
   const [showJoinDialog, setShowJoinDialog] = useState(false);
   const [showLeaveDialog, setShowLeaveDialog] = useState(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [showRegenerateDialog, setShowRegenerateDialog] = useState(false);
+  const [regenerating, setRegenerating] = useState(false);
   const [newFamilyName, setNewFamilyName] = useState("");
   const [joinCode, setJoinCode] = useState("");
   const [codeCopied, setCodeCopied] = useState(false);
@@ -262,6 +264,39 @@ const FamilySharing = () => {
       setTimeout(() => setCodeCopied(false), 2000);
     }
   };
+
+  const regenerateInviteCode = async () => {
+    if (!family) return;
+    setRegenerating(true);
+    try {
+      const array = new Uint8Array(6);
+      crypto.getRandomValues(array);
+      const newCode = Array.from(array)
+        .map(b => b.toString(36).padStart(2, '0'))
+        .join('')
+        .toUpperCase()
+        .substring(0, 8);
+
+      const { data, error } = await (supabase
+        .from("families" as any)
+        .update({ invite_code: newCode })
+        .eq("id", family.id)
+        .select()
+        .single() as any);
+
+      if (error) throw error;
+
+      setFamily({ ...family, invite_code: (data as any).invite_code });
+      toast({ title: "সফল", description: "নতুন ইনভাইট কোড তৈরি হয়েছে। পুরানো কোডটি আর কাজ করবে না।" });
+      setShowRegenerateDialog(false);
+    } catch (error: any) {
+      console.error("Error regenerating invite code:", error);
+      toast({ title: "ত্রুটি", description: error.message || "কোড রিজেনারেট করতে সমস্যা", variant: "destructive" });
+    } finally {
+      setRegenerating(false);
+    }
+  };
+
 
   if (loading) {
     return (
