@@ -183,7 +183,7 @@ const TagManager = ({ selectedTags, onTagsChange, expenseId }: TagManagerProps) 
                         {tag.name_bn}
                         <button
                           onClick={() => deleteTag(tag.id)}
-                          className="hover:bg-white/20 rounded-full p-0.5"
+                          className="hover:bg-foreground/10 rounded-full p-0.5"
                         >
                           <X className="h-3 w-3" />
                         </button>

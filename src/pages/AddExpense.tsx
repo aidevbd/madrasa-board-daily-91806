@@ -443,7 +443,7 @@ const AddExpense = () => {
           <div className="space-y-2">
             <Label htmlFor="receipt">রশিদ আপলোড</Label>
             {processingOCR && (
-              <div className="bg-blue-50 dark:bg-blue-950/20 p-3 rounded-lg text-sm text-blue-600 dark:text-blue-400">
+              <div className="bg-primary/10 p-3 rounded-lg text-sm text-primary">
                 🤖 OCR প্রসেসিং চলছে... রশিদ থেকে তথ্য বের করা হচ্ছে
               </div>
             )}

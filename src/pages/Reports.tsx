@@ -396,11 +396,11 @@ const Reports = () => {
             <Card className="p-4 md:p-6 space-y-3 md:space-y-4">
               <h3 className="font-semibold text-lg md:text-xl">সারসংক্ষেপ</h3>
               <div className="grid grid-cols-3 gap-3 md:gap-4 text-center">
-                <div className="bg-green-50 dark:bg-green-950/20 p-3 md:p-4 rounded-xl">
+                <div className="bg-success/10 p-3 md:p-4 rounded-xl">
                   <p className="text-xs md:text-sm text-muted-foreground">মোট জমা</p>
                   <p className="text-lg md:text-xl lg:text-2xl font-bold text-success">৳ {reportData.totalFunds.toFixed(2)}</p>
                 </div>
-                <div className="bg-red-50 dark:bg-red-950/20 p-3 md:p-4 rounded-xl">
+                <div className="bg-destructive/10 p-3 md:p-4 rounded-xl">
                   <p className="text-xs md:text-sm text-muted-foreground">মোট খরচ</p>
                   <p className="text-lg md:text-xl lg:text-2xl font-bold text-destructive">৳ {reportData.totalExpenses.toFixed(2)}</p>
                 </div>

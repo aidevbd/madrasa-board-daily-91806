@@ -386,7 +386,7 @@ const FamilySharing = () => {
               <p className="text-xs text-muted-foreground">{members.length} জন সদস্য</p>
             </div>
             {isOwner && (
-              <Badge className="bg-amber-500 text-white">
+              <Badge className="bg-warning text-warning-foreground">
                 <Crown className="h-3 w-3 mr-1" />
                 মালিক
               </Badge>
@@ -401,7 +401,7 @@ const FamilySharing = () => {
                   {family.invite_code}
                 </code>
                 <Button variant="ghost" size="icon" onClick={copyInviteCode} aria-label="কপি করুন">
-                  {codeCopied ? <Check className="h-4 w-4 text-green-500" /> : <Copy className="h-4 w-4" />}
+                  {codeCopied ? <Check className="h-4 w-4 text-success" /> : <Copy className="h-4 w-4" />}
                 </Button>
                 <Button
                   variant="ghost"
@@ -434,7 +434,7 @@ const FamilySharing = () => {
                     <p className="text-sm font-medium">
                       {member.profiles?.email || "অজানা"}
                       {member.member_user_id === family.owner_id && (
-                        <Crown className="inline h-3 w-3 ml-1 text-amber-500" />
+                        <Crown className="inline h-3 w-3 ml-1 text-warning" />
                       )}
                     </p>
                     <p className="text-xs text-muted-foreground">

@@ -191,7 +191,7 @@ const Receipts = () => {
         {/* Receipt Detail Modal */}
         {selectedReceipt && (
           <div
-            className="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4"
+            className="fixed inset-0 bg-foreground/80 z-50 flex items-center justify-center p-4"
             onClick={() => setSelectedReceipt(null)}
           >
             <Card className="max-w-lg w-full max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
