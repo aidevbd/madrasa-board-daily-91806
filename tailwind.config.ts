@@ -13,6 +13,20 @@ export default {
       },
     },
     extend: {
+      fontFamily: {
+        sans: ["'Noto Sans Bengali'", "system-ui", "sans-serif"],
+        heading: ["'Noto Serif Bengali'", "'Noto Sans Bengali'", "serif"],
+      },
+      fontSize: {
+        xs: ["0.75rem", { lineHeight: "1.7" }],
+        sm: ["0.875rem", { lineHeight: "1.75" }],
+        base: ["1rem", { lineHeight: "1.85" }],
+        lg: ["1.125rem", { lineHeight: "1.7" }],
+        xl: ["1.25rem", { lineHeight: "1.55" }],
+        "2xl": ["1.5rem", { lineHeight: "1.45" }],
+        "3xl": ["1.875rem", { lineHeight: "1.4" }],
+        "4xl": ["2.25rem", { lineHeight: "1.35" }],
+      },
       colors: {
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",
