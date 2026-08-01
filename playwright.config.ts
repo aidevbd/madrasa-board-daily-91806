@@ -11,6 +11,11 @@ export default defineConfig({
     baseURL: 'http://localhost:8080',
     trace: 'on-first-retry',
     screenshot: 'only-on-failure',
+    launchOptions: {
+      args: ['--no-sandbox', '--disable-dev-shm-usage', '--disable-gpu'],
+      // Allows pointing at a system-provided Chromium (useful in sandboxed CI images)
+      ...(process.env.PW_CHROMIUM_PATH ? { executablePath: process.env.PW_CHROMIUM_PATH } : {}),
+    },
   },
 
   projects: [

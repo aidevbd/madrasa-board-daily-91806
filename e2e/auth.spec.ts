@@ -6,34 +6,35 @@ test.describe('Authentication Flow', () => {
   });
 
   test('should display auth page correctly', async ({ page }) => {
-    await expect(page.locator('h2')).toContainText('প্রবেশ করুন');
-    await expect(page.locator('input[type="email"]')).toBeVisible();
-    await expect(page.locator('input[type="password"]')).toBeVisible();
-  });
-
-  test('should show validation errors for invalid inputs', async ({ page }) => {
-    // Click login without filling fields
-    await page.click('button:has-text("প্রবেশ করুন")');
-    
-    // Should show toast or error message
-    await page.waitForTimeout(1000);
+    await expect(page.locator('h1')).toContainText('দৈনিক বোর্ডিং ম্যানেজার');
+    await expect(page.locator('input#email')).toBeVisible();
+    await expect(page.locator('input#password')).toBeVisible();
+    await expect(page.getByRole('button', { name: 'লগ ইন', exact: true })).toBeVisible();
   });
 
   test('should toggle between login and signup', async ({ page }) => {
-    // Start with login
-    await expect(page.locator('h2')).toContainText('প্রবেশ করুন');
-    
-    // Switch to signup
-    await page.click('button:has-text("নতুন একাউন্ট তৈরি করুন")');
-    await expect(page.locator('h2')).toContainText('নিবন্ধন করুন');
-    
-    // Switch back to login
-    await page.click('button:has-text("ইতিমধ্যে একাউন্ট আছে")');
-    await expect(page.locator('h2')).toContainText('প্রবেশ করুন');
+    await expect(page.getByRole('button', { name: 'লগ ইন', exact: true })).toBeVisible();
+
+    await page.getByRole('button', { name: 'নতুন অ্যাকাউন্ট তৈরি করুন' }).click();
+    await expect(page.getByRole('button', { name: 'সাইন আপ', exact: true })).toBeVisible();
+
+    await page.getByRole('button', { name: /আগে থেকে অ্যাকাউন্ট আছে/ }).click();
+    await expect(page.getByRole('button', { name: 'লগ ইন', exact: true })).toBeVisible();
   });
 
-  test('should navigate to forgot password', async ({ page }) => {
-    await page.click('button:has-text("পাসওয়ার্ড ভুলে গেছেন")');
-    await expect(page.locator('h2')).toContainText('পাসওয়ার্ড রিসেট');
+  test('should navigate to forgot password and back', async ({ page }) => {
+    await page.getByRole('button', { name: 'পাসওয়ার্ড ভুলে গেছেন?' }).click();
+    await expect(page.getByRole('button', { name: 'পাসওয়ার্ড রিসেট লিংক পাঠান' })).toBeVisible();
+    await expect(page.locator('input#reset-email')).toBeVisible();
+
+    await page.getByRole('button', { name: 'ফিরে যান' }).click();
+    await expect(page.locator('input#password')).toBeVisible();
+  });
+
+  test('should show validation error for empty credentials', async ({ page }) => {
+    await page.getByRole('button', { name: 'লগ ইন', exact: true }).click();
+    await expect(page.locator('[data-radix-toast-viewport], [role="status"]').first()).toBeVisible({
+      timeout: 10000,
+    });
   });
 });
