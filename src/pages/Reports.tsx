@@ -13,7 +13,15 @@ import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip, BarChart, Ba
 import jsPDF from "jspdf";
 import html2canvas from "html2canvas";
 
-const COLORS = ["#10b981", "#3b82f6", "#f59e0b", "#ef4444", "#8b5cf6", "#ec4899"];
+// Islamic green-family chart palette derived from the brand token (#008E48)
+const COLORS = [
+  "hsl(150 100% 28%)",
+  "hsl(150 65% 42%)",
+  "hsl(150 45% 58%)",
+  "hsl(165 55% 35%)",
+  "hsl(38 88% 45%)",
+  "hsl(4 68% 45%)",
+];
 const CACHE_KEY = "last_report_data";
 
 const Reports = () => {
@@ -396,11 +404,11 @@ const Reports = () => {
             <Card className="p-4 md:p-6 space-y-3 md:space-y-4">
               <h3 className="font-semibold text-lg md:text-xl">সারসংক্ষেপ</h3>
               <div className="grid grid-cols-3 gap-3 md:gap-4 text-center">
-                <div className="bg-green-50 dark:bg-green-950/20 p-3 md:p-4 rounded-xl">
+                <div className="bg-success/10 p-3 md:p-4 rounded-xl">
                   <p className="text-xs md:text-sm text-muted-foreground">মোট জমা</p>
                   <p className="text-lg md:text-xl lg:text-2xl font-bold text-success">৳ {reportData.totalFunds.toFixed(2)}</p>
                 </div>
-                <div className="bg-red-50 dark:bg-red-950/20 p-3 md:p-4 rounded-xl">
+                <div className="bg-destructive/10 p-3 md:p-4 rounded-xl">
                   <p className="text-xs md:text-sm text-muted-foreground">মোট খরচ</p>
                   <p className="text-lg md:text-xl lg:text-2xl font-bold text-destructive">৳ {reportData.totalExpenses.toFixed(2)}</p>
                 </div>
@@ -420,7 +428,7 @@ const Reports = () => {
                   <XAxis dataKey="name" />
                   <YAxis />
                   <Tooltip formatter={(value) => `৳ ${Number(value).toFixed(2)}`} />
-                  <Bar dataKey="value" fill="#8884d8">
+                  <Bar dataKey="value" fill="hsl(150 100% 28%)">
                     {barChartData.map((entry, index) => (
                       <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                     ))}
@@ -442,7 +450,7 @@ const Reports = () => {
                       labelLine={false}
                       label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
                       outerRadius={80}
-                      fill="#8884d8"
+                      fill="hsl(150 100% 28%)"
                       dataKey="value"
                     >
                       {pieChartData.map((entry, index) => (

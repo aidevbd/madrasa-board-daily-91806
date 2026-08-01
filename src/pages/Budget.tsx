@@ -142,7 +142,7 @@ const Budget = () => {
   const getProgressColor = (spent: number, limit: number) => {
     const percentage = (spent / limit) * 100;
     if (percentage >= 100) return "bg-destructive";
-    if (percentage >= 80) return "bg-yellow-500";
+    if (percentage >= 80) return "bg-warning";
     return "bg-primary";
   };
 
@@ -228,7 +228,7 @@ const Budget = () => {
                       <h3 className="font-semibold text-lg md:text-xl flex items-center gap-2">
                         {budget.category.name_bn}
                         {isOverBudget && <AlertTriangle className="h-4 w-4 md:h-5 md:w-5 text-destructive" />}
-                        {isNearLimit && <AlertTriangle className="h-4 w-4 md:h-5 md:w-5 text-yellow-500" />}
+                        {isNearLimit && <AlertTriangle className="h-4 w-4 md:h-5 md:w-5 text-warning" />}
                       </h3>
                       <p className="text-sm md:text-base text-muted-foreground">
                         {budget.spent.toFixed(2)} / {budget.monthly_limit.toFixed(2)} টাকা
