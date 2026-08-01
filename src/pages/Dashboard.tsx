@@ -204,7 +204,7 @@ const Dashboard = () => {
         <div className="grid grid-cols-2 gap-4 md:gap-6">
           <Card>
             <div className="p-4 md:p-6">
-              <div className="flex items-center gap-2 md:gap-3 mb-2 md:mb-3 text-green-600">
+              <div className="flex items-center gap-2 md:gap-3 mb-2 md:mb-3 text-success">
                 <TrendingUp className="h-4 w-4 md:h-5 md:w-5 lg:h-6 lg:w-6" />
                 <p className="text-xs md:text-sm lg:text-base font-medium">এই মাসের জমা</p>
               </div>
@@ -214,7 +214,7 @@ const Dashboard = () => {
 
           <Card>
             <div className="p-4 md:p-6">
-              <div className="flex items-center gap-2 md:gap-3 mb-2 md:mb-3 text-red-600">
+              <div className="flex items-center gap-2 md:gap-3 mb-2 md:mb-3 text-destructive">
                 <TrendingDown className="h-4 w-4 md:h-5 md:w-5 lg:h-6 lg:w-6" />
                 <p className="text-xs md:text-sm lg:text-base font-medium">এই মাসের খরচ</p>
               </div>
@@ -293,7 +293,7 @@ const Dashboard = () => {
                       )}
                     </div>
                   </div>
-                  <p className={`font-semibold text-base md:text-lg lg:text-xl ${transaction.type === 'expense' ? 'text-red-600' : 'text-green-600'}`}>
+                  <p className={`font-semibold text-base md:text-lg lg:text-xl ${transaction.type === 'expense' ? 'text-destructive' : 'text-success'}`}>
                     {transaction.type === 'expense' ? '-' : '+'}৳ {Number(transaction.type === 'expense' ? transaction.total_price : transaction.amount).toFixed(2)}
                   </p>
                 </div>

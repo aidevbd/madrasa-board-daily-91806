@@ -398,11 +398,11 @@ const Reports = () => {
               <div className="grid grid-cols-3 gap-3 md:gap-4 text-center">
                 <div className="bg-green-50 dark:bg-green-950/20 p-3 md:p-4 rounded-xl">
                   <p className="text-xs md:text-sm text-muted-foreground">মোট জমা</p>
-                  <p className="text-lg md:text-xl lg:text-2xl font-bold text-green-600">৳ {reportData.totalFunds.toFixed(2)}</p>
+                  <p className="text-lg md:text-xl lg:text-2xl font-bold text-success">৳ {reportData.totalFunds.toFixed(2)}</p>
                 </div>
                 <div className="bg-red-50 dark:bg-red-950/20 p-3 md:p-4 rounded-xl">
                   <p className="text-xs md:text-sm text-muted-foreground">মোট খরচ</p>
-                  <p className="text-lg md:text-xl lg:text-2xl font-bold text-red-600">৳ {reportData.totalExpenses.toFixed(2)}</p>
+                  <p className="text-lg md:text-xl lg:text-2xl font-bold text-destructive">৳ {reportData.totalExpenses.toFixed(2)}</p>
                 </div>
                 <div className="bg-primary/10 p-3 md:p-4 rounded-xl">
                   <p className="text-xs md:text-sm text-muted-foreground">ব্যালেন্স</p>
@@ -490,7 +490,7 @@ const Reports = () => {
                       {expense.expense_date} • {expense.expense_categories?.name_bn}
                     </p>
                   </div>
-                  <p className="font-semibold text-red-600">-৳ {Number(expense.total_price).toFixed(2)}</p>
+                  <p className="font-semibold text-destructive">-৳ {Number(expense.total_price).toFixed(2)}</p>
                 </div>
               ))}
               {reportData.funds.map((fund: any) => (
@@ -499,7 +499,7 @@ const Reports = () => {
                     <p className="font-medium">{fund.source_note_bn || "জমা"}</p>
                     <p className="text-xs text-muted-foreground">{fund.fund_date}</p>
                   </div>
-                  <p className="font-semibold text-green-600">+৳ {Number(fund.amount).toFixed(2)}</p>
+                  <p className="font-semibold text-success">+৳ {Number(fund.amount).toFixed(2)}</p>
                 </div>
               ))}
             </Card>

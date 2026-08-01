@@ -361,7 +361,7 @@ const Transactions = () => {
                             </div>
                           </div>
                           <div className="text-right">
-                            <p className="text-xl font-bold text-red-600">৳ {totalAmount.toFixed(2)}</p>
+                            <p className="text-xl font-bold text-destructive">৳ {totalAmount.toFixed(2)}</p>
                           </div>
                         </div>
 
@@ -392,7 +392,7 @@ const Transactions = () => {
                                   </p>
                                 )}
                               </div>
-                              <p className="font-semibold text-red-600">৳ {Number(expense.total_price).toFixed(2)}</p>
+                              <p className="font-semibold text-destructive">৳ {Number(expense.total_price).toFixed(2)}</p>
                             </div>
                           ))}
                         </CollapsibleContent>
@@ -447,7 +447,7 @@ const Transactions = () => {
                         )}
                       </div>
                       <div className="text-right">
-                        <p className="text-xl font-bold text-red-600">৳ {Number(expense.total_price).toFixed(2)}</p>
+                        <p className="text-xl font-bold text-destructive">৳ {Number(expense.total_price).toFixed(2)}</p>
                         {expense.quantity && expense.units && (
                           <p className="text-sm text-muted-foreground">
                             {Number(expense.quantity)} {expense.units.name_bn}
@@ -512,7 +512,7 @@ const Transactions = () => {
                       </div>
                     </div>
                     <div className="text-right">
-                      <p className="text-xl font-bold text-green-600">৳ {Number(fund.amount).toFixed(2)}</p>
+                      <p className="text-xl font-bold text-success">৳ {Number(fund.amount).toFixed(2)}</p>
                     </div>
                   </div>
                   <div className="flex gap-2">
