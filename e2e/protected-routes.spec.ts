@@ -26,7 +26,7 @@ test.describe('Protected routes (signed out)', () => {
 test.describe('Not found route', () => {
   test('shows Bengali 404 page', async ({ page }) => {
     await page.goto('/this-route-does-not-exist');
-    await expect(page.locator('body')).toContainText('404');
+    await expect(page.locator('h1')).toContainText('৪০৪');
   });
 });
 
