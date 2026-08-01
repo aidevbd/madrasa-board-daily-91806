@@ -13,7 +13,15 @@ import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip, BarChart, Ba
 import jsPDF from "jspdf";
 import html2canvas from "html2canvas";
 
-const COLORS = ["#10b981", "#3b82f6", "#f59e0b", "#ef4444", "#8b5cf6", "#ec4899"];
+// Islamic green-family chart palette derived from the brand token (#008E48)
+const COLORS = [
+  "hsl(150 100% 28%)",
+  "hsl(150 65% 42%)",
+  "hsl(150 45% 58%)",
+  "hsl(165 55% 35%)",
+  "hsl(38 88% 45%)",
+  "hsl(4 68% 45%)",
+];
 const CACHE_KEY = "last_report_data";
 
 const Reports = () => {
@@ -420,7 +428,7 @@ const Reports = () => {
                   <XAxis dataKey="name" />
                   <YAxis />
                   <Tooltip formatter={(value) => `৳ ${Number(value).toFixed(2)}`} />
-                  <Bar dataKey="value" fill="#8884d8">
+                  <Bar dataKey="value" fill="hsl(150 100% 28%)">
                     {barChartData.map((entry, index) => (
                       <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                     ))}
@@ -442,7 +450,7 @@ const Reports = () => {
                       labelLine={false}
                       label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
                       outerRadius={80}
-                      fill="#8884d8"
+                      fill="hsl(150 100% 28%)"
                       dataKey="value"
                     >
                       {pieChartData.map((entry, index) => (
