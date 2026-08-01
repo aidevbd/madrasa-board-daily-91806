@@ -13,6 +13,8 @@ export default defineConfig({
     screenshot: 'only-on-failure',
     launchOptions: {
       args: ['--no-sandbox', '--disable-dev-shm-usage', '--disable-gpu'],
+      // Allows pointing at a system-provided Chromium (useful in sandboxed CI images)
+      ...(process.env.PW_CHROMIUM_PATH ? { executablePath: process.env.PW_CHROMIUM_PATH } : {}),
     },
   },
 
